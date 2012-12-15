@@ -1,4 +1,4 @@
 FRC2013
 =======
 
-Team 20's source code for the 2013 FIRST Robotics Competition Game.
+Team 20's source code for the 2013 FIRST Robotics Competition Game.  Implementation, distribution, or any other usage of this code without express consent by Rungrunner's Robotics, Inc. is prohibited.
