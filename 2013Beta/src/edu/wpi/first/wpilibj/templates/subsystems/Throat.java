@@ -7,6 +7,7 @@ package edu.wpi.first.wpilibj.templates.subsystems;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.templates.RobotMap;
+import edu.wpi.first.wpilibj.templates.commands.ThroatStop;
 
 /**
  *
@@ -23,6 +24,7 @@ public class Throat extends Subsystem {
     public void initDefaultCommand() {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
+        setDefaultCommand(new ThroatStop());
     }
     
     public void setSpeed(double speed){
@@ -35,5 +37,9 @@ public class Throat extends Subsystem {
     
     public void driveBackward(){
         throatJag.set(throatBackwardSpeed);
+    }
+    
+    public void stop(){
+        throatJag.set(0.0);
     }
 }

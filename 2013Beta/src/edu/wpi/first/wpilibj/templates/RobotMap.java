@@ -22,6 +22,11 @@ public class RobotMap {
     public static final int topShooterJagPort = 8;
     public static final int bottomShooterJagPort = 9;
     
+    public static final int shooterTopEncoderAChannel = 1;
+    public static final int shooterTopEncoderBChannel = 1;
+    public static final int shooterBottomEncoderAChannel = 2;
+    public static final int shooterBottomEncoderBChannel = 2;
+    
     // If you are using multiple modules, make sure to define both the port
     // number and the module. For example you with a rangefinder:
     // public static final int rangefinderPort = 1;

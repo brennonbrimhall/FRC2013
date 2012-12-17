@@ -28,6 +28,10 @@ public class Drivetrain extends Subsystem {
     }
     
     
+    public void drive(double outputMagnitude, double curve){
+        drive.drive(outputMagnitude, curve);
+    }
+    
     public void arcadeDrive(Joystick stick){
         drive.arcadeDrive(stick);
     }
