@@ -20,7 +20,6 @@ public abstract class CommandBase extends Command {
     // Create a single static instance of all of your subsystems
     //public static ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
 
-    
     public static Drivetrain drivetrain = new Drivetrain();
     public static Rollers rollers = new Rollers();
     public static Shooter shooter = new Shooter();
