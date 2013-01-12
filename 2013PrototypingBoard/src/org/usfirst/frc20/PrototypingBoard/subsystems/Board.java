@@ -14,6 +14,7 @@ import org.usfirst.frc20.PrototypingBoard.commands.*;
 import edu.wpi.first.wpilibj.*;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
+import org.usfirst.frc20.PrototypingBoard.Robot;
 
 /**
  *
@@ -38,20 +39,24 @@ public class Board extends Subsystem {
     }
 
     public void runAllMotors(Joystick stick) {
-        victor.set(stick.getThrottle());
-        jaguar.set(stick.getThrottle());
-        talon.set(stick.getThrottle());
+        victor.set(stick.getRawAxis(2));
+        jaguar.set(stick.getRawAxis(2));
+        talon.set(stick.getRawAxis(2));
+        Robot.logger.logValue("All Motors Speed", stick.getRawAxis(2));
     }
 
     public void runTalon(Joystick stick) {
-        talon.set(stick.getThrottle());
+        talon.set(stick.getRawAxis(2));
+        Robot.logger.logValue("Talon Speed", stick.getRawAxis(2));
     }
 
     public void runJaguar(Joystick stick) {
-        jaguar.set(stick.getThrottle());
+        jaguar.set(stick.getRawAxis(2));
+        Robot.logger.logValue("Jaguar Speed", stick.getRawAxis(2));
     }
 
     public void runVictor(Joystick stick) {
-        victor.set(stick.getThrottle());
+        victor.set(stick.getRawAxis(2));
+        Robot.logger.logValue("Victor Speed", stick.getRawAxis(2));
     }
 }
