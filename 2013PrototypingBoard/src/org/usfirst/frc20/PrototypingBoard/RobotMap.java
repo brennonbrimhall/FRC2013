@@ -30,7 +30,8 @@ public class RobotMap {
     public static Talon boardTalon;
     
     public static void init() {
-        
+        boardVictor = new Victor(2);
+        LiveWindow.addActuator("Board", "Victor", boardVictor);
         boardTalon = new Talon(1);
         LiveWindow.addActuator("Board", "Talon", boardTalon);
         
