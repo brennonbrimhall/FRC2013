@@ -83,10 +83,6 @@ public class OI {
         
         decrementVictorButton = new JoystickButton(joystick, 7);
         decrementVictorButton.whenReleased(new DecrementVictor());
-        
-        
-
-
 	    
         // SmartDashboard Buttons
         SmartDashboard.putData("RunTalon", new RunTalon());
