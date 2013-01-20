@@ -24,6 +24,8 @@ public class  Turn180 extends Command {
     RobotMap driveTrainObjects;//the mapping object so we can mess with the 
     Jaguar topRight, topLeft, bottomLeft, bottomRight;
     double speed;
+    double checkAngle;//this variable is at a certain angle can be checked for the  time
+    double angSpeed;
     public Turn180() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -43,14 +45,22 @@ public class  Turn180 extends Command {
         bottomLeft = driveTrainObjects.getBottomLeftJag();
     }
     //sets the speed at which the robot turns very important
-    public double findArcLength(){
-        
+    public double findArcLength(double radius, double angle){
+        double arcLength = 0;
+        arcLength = angle * radius;
+        return arcLength;
     }
     public void setSpeed(double speed){
         this.speed = speed;
     }
-    public void findAngularSpeed(){
-        
+    public void findAngularSpeed(double time, double  radius, double angle){
+        this.angSpeed = findArcLength(radius,angle) / time;
+    }
+    public void setCheckAngle(double angle){
+         this.checkAngle = angle;
+    }
+    public double checkTime(){
+        return checkAngle / angSpeed;
     }
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
@@ -60,12 +70,18 @@ public class  Turn180 extends Command {
             bottomRight.set(speed);
             bottomLeft.set(-speed);
             topLeft.set(-speed);
-            findAngularSpeed();
+            if(checkAngle == 0){
+                checkAngle = (15.0 / 180.0) * Math.PI;
+            }
         while (angle >= gyro.getAngle()){    
+            if(angSpeed != 0){
             try {
-                Thread.sleep(100);
+                Thread.sleep((long)checkTime());
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
+            }
+            }else{
+                
             }
         }
         topRight.set(0);
