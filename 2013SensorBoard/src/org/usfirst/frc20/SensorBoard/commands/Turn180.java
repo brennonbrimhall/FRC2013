@@ -46,30 +46,29 @@ public class  Turn180 extends Command {
     public void setSpeed(double speed){
         this.speed = speed;
     }
+    public void findAngularSpeed(){
+        
+    }
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
         gyro.reset();
         double angle = Math.PI;
-        while (angle >= gyro.getAngle()){
-            topRight.set(speed);
+        topRight.set(speed);
             bottomRight.set(speed);
             bottomLeft.set(-speed);
             topLeft.set(-speed);
-            //TODO this is the real important thing to fix
-            /* here we have to come up with a method where 
-             * it finds the angular speed in radians
-             * to determine how often to check the while statement or else
-             * it will use too much data, and that's
-             * what Mr. Barra told me todo
-             * for now it is using a default of 100 miliseconds which it
-             * checks 10 times per second
-             */
+            findAngularSpeed();
+        while (angle >= gyro.getAngle()){    
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         }
+        topRight.set(0);
+            bottomRight.set(0);
+            bottomLeft.set(0);
+            topLeft.set(0);
     }
     public void findAngularSpeed(double angle){
         
