@@ -317,7 +317,7 @@ Properties:
   Java Package: !!robotbuilder.data.properties.StringProperty {default: org.usfirst.frc0000,
     name: Java Package, validators: null, value: org.usfirst.frc0020}
   Java Project: !!robotbuilder.data.properties.FileProperty {default: '', extension: null,
-    folder: true, name: Java Project, validators: null, value: 'C:\Users\Dan\Documents\GitHub\FRC2013\2013SensorBoard'}
+    folder: true, name: Java Project, validators: null, value: 'C:\Users\Dan\Desktop\Temp'}
   Export Subsystems: !!robotbuilder.data.properties.BooleanProperty {default: true,
     name: Export Subsystems, validators: null, value: true}
   Team Number: !!robotbuilder.data.properties.IntegerProperty {default: 0, name: Team Number,
