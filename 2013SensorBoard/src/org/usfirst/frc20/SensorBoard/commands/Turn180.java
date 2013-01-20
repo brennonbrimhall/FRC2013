@@ -43,6 +43,9 @@ public class  Turn180 extends Command {
         bottomLeft = driveTrainObjects.getBottomLeftJag();
     }
     //sets the speed at which the robot turns very important
+    public double findArcLength(){
+        
+    }
     public void setSpeed(double speed){
         this.speed = speed;
     }
