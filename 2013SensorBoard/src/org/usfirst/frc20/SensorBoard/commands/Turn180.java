@@ -13,7 +13,9 @@ package org.usfirst.frc20.SensorBoard.commands;
 
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.Jaguar;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
+import java.util.TimerTask;
 import org.usfirst.frc20.SensorBoard.RobotMap;
 
 /**
@@ -23,7 +25,8 @@ public class  Turn180 extends Command {
     Gyro gyro;
     RobotMap driveTrainObjects;//the mapping object so we can mess with the 
     Jaguar topRight, topLeft, bottomLeft, bottomRight;
-    double speed;
+    double speed = .25;
+    boolean turned = false;
     public Turn180() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -46,37 +49,46 @@ public class  Turn180 extends Command {
     public void setSpeed(double speed){
         this.speed = speed;
     }
-    // Called repeatedly when this Command is scheduled to run
+    TimerTask checkForAngle = new TimerTask(){
+        public void run() {
+            double angle = Math.PI;
+            if(angle <= gyro.getAngle()){
+            topLeft.set(0);
+            bottomLeft.set(0);
+            topRight.set(0);
+            bottomRight.set(0);
+            turned = true;
+            }
+        }
+    };
+    /* first it resets the gyro angle
+     * starts the jag motors in reverse from each side at the specified speed
+     * speed's default is 25% power
+     * starts the timertask and exceutes it every 100 milisec.
+     * once it has reached 180, the motors stop 
+     */
     protected void execute() {
-        gyro.reset();
-        double angle = Math.PI;
-        while (angle >= gyro.getAngle()){
-            topRight.set(speed);
-            bottomRight.set(speed);
-            bottomLeft.set(-speed);
-            topLeft.set(-speed);
-            //TODO this is the real important thing to fix
-            /* here we have to come up with a method where 
-             * it finds the angular speed in radians
-             * to determine how often to check the while statement or else
-             * it will use too much data, and that's
-             * what Mr. Barra told me todo
-             * for now it is using a default of 100 miliseconds which it
-             * checks 10 times per second
-             */
+            gyro.reset();
+            topLeft.set(speed);
+            bottomLeft.set(speed);
+            topRight.set(-speed);
+            bottomRight.set(-speed);
+            while(true){
+                if(turned){
             try {
-                Thread.sleep(100);
+                checkForAngle.wait(100);
+                //TODO this exception might actually hurt us
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-        }
-    }
-    public void findAngularSpeed(double angle){
-        
+                }else {
+                    break;
+                }
+            }
     }
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return turned;
     }
 
     // Called once after isFinished returns true
