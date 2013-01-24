@@ -10,6 +10,8 @@ import java.net.URL;
 
 public class Camera {
     
+    
+    
     public static final int FRONT = 0, BACK = 1;
     private String url = "";
     private String username = "";
@@ -19,7 +21,7 @@ public class Camera {
     private boolean AXIS_CAMERA = true;
     private boolean USE_MJPG = true;
     private boolean CONNECTED = false;
-
+    
     public Camera(String url, String username, String password, boolean AXIS_CAMERA, boolean USE_MJPG) {
         this.url = url;
         this.username = username;
@@ -29,7 +31,12 @@ public class Camera {
 
         connect();
     }
-
+    
+    public void setURL(String url){
+        this.url = url;
+        connect();
+    }
+    
     private String encodeUsernameAndPasswordInBase64(String username, String password) {
         String string = username + ":" + password;
         //string = new sun.misc.BASE64Encoder().encode(string.getBytes());
@@ -48,8 +55,6 @@ public class Camera {
             while (!FOUND) {
                 dis.read(buffer, 0, delimiter_bytes);
                 line = new String(buffer);
-                //System.out.print(line);
-
                 if (line.equals(delimiter)) {
                     FOUND = true;
                 }
@@ -58,7 +63,7 @@ public class Camera {
             e.printStackTrace();
         }
     }
-
+    
     private void readLine(DataInputStream dis, int n) {
         //Used to strip out the header lines
         for (int i = 0; i < n; i++) {
@@ -71,10 +76,10 @@ public class Camera {
             huc = (HttpURLConnection) (new URL(url)).openConnection();
             huc.setRequestProperty("Authorization", encodeUsernameAndPasswordInBase64(username, password));
             InputStream is = huc.getInputStream();
-            CONNECTED = true;
+           
             BufferedInputStream bis = new BufferedInputStream(is);
             dis = new DataInputStream(bis);
-            System.out.println("Connected");
+            CONNECTED = true;
         } catch (IOException e) {
             System.out.println(e);//If no connection exists wait and try again
             try {
