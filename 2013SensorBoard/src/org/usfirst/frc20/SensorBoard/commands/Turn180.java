@@ -13,7 +13,9 @@ package org.usfirst.frc20.SensorBoard.commands;
 
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.Jaguar;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
+import java.util.TimerTask;
 import org.usfirst.frc20.SensorBoard.RobotMap;
 
 /**
@@ -23,9 +25,14 @@ public class  Turn180 extends Command {
     Gyro gyro;
     RobotMap driveTrainObjects;//the mapping object so we can mess with the 
     Jaguar topRight, topLeft, bottomLeft, bottomRight;
+<<<<<<< HEAD
     double speed;
     double checkAngle;//this variable is at a certain angle can be checked for the  time
     double angSpeed;
+=======
+    double speed = .25;
+    boolean turned = false;
+>>>>>>> b5f1941037597f1610040e97769303e390780709
     public Turn180() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -62,39 +69,46 @@ public class  Turn180 extends Command {
     public double checkTime(){
         return checkAngle / angSpeed;
     }
-    // Called repeatedly when this Command is scheduled to run
-    protected void execute() {
-        gyro.reset();
-        double angle = Math.PI;
-        topRight.set(speed);
-            bottomRight.set(speed);
-            bottomLeft.set(-speed);
-            topLeft.set(-speed);
-            if(checkAngle == 0){
-                checkAngle = (15.0 / 180.0) * Math.PI;
+    TimerTask checkForAngle = new TimerTask(){
+        public void run() {
+            double angle = Math.PI;
+            if(angle <= gyro.getAngle()){
+            topLeft.set(0);
+            bottomLeft.set(0);
+            topRight.set(0);
+            bottomRight.set(0);
+            turned = true;
             }
-        while (angle >= gyro.getAngle()){    
-            if(angSpeed != 0){
+        }
+    };
+    /* first it resets the gyro angle
+     * starts the jag motors in reverse from each side at the specified speed
+     * speed's default is 25% power
+     * starts the timertask and exceutes it every 100 milisec.
+     * once it has reached 180, the motors stop 
+     */
+    protected void execute() {
+            gyro.reset();
+            topLeft.set(speed);
+            bottomLeft.set(speed);
+            topRight.set(-speed);
+            bottomRight.set(-speed);
+            while(true){
+                if(turned){
             try {
-                Thread.sleep((long)checkTime());
+                checkForAngle.wait(100);
+                //TODO this exception might actually hurt us
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-            }else{
-                
+                }else {
+                    break;
+                }
             }
-        }
-        topRight.set(0);
-            bottomRight.set(0);
-            bottomLeft.set(0);
-            topLeft.set(0);
-    }
-    public void findAngularSpeed(double angle){
-        
     }
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return turned;
     }
 
     // Called once after isFinished returns true
