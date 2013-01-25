@@ -25,14 +25,10 @@ public class  Turn180 extends Command {
     Gyro gyro;
     RobotMap driveTrainObjects;//the mapping object so we can mess with the 
     Jaguar topRight, topLeft, bottomLeft, bottomRight;
-<<<<<<< HEAD
-    double speed;
     double checkAngle;//this variable is at a certain angle can be checked for the  time
     double angSpeed;
-=======
     double speed = .25;
     boolean turned = false;
->>>>>>> b5f1941037597f1610040e97769303e390780709
     public Turn180() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -60,51 +56,51 @@ public class  Turn180 extends Command {
     public void setSpeed(double speed){
         this.speed = speed;
     }
-    public void findAngularSpeed(double time, double  radius, double angle){
-        this.angSpeed = findArcLength(radius,angle) / time;
+    public void findAngularSpeed(double time,double angle){
+        this.angSpeed = angle / time;
     }
-    public void setCheckAngle(double angle){
-         this.checkAngle = angle;
+    public void setCheckAngle(){
+        time.reset();
+        time.start();
+        topLeft.set(.75);
+        bottomLeft.set(.75);
+        topRight.set(-.75);
+        bottomRight.set(-.75);
+        //TODO find pout what this value is
+        findAngularSpeed(time.get(), gyro.getAngle());
     }
     public double checkTime(){
         return checkAngle / angSpeed;
     }
-    TimerTask checkForAngle = new TimerTask(){
-        public void run() {
-            double angle = Math.PI;
-            if(angle <= gyro.getAngle()){
-            topLeft.set(0);
-            bottomLeft.set(0);
-            topRight.set(0);
-            bottomRight.set(0);
-            turned = true;
-            }
-        }
-    };
+    Timer time = new Timer();
     /* first it resets the gyro angle
      * starts the jag motors in reverse from each side at the specified speed
      * speed's default is 25% power
      * starts the timertask and exceutes it every 100 milisec.
      * once it has reached 180, the motors stop 
      */
+    public void setZeroJag(){
+        topLeft.set(0);
+        bottomLeft.set(0);
+        topRight.set(0);
+        bottomRight.set(0);
+    } 
     protected void execute() {
             gyro.reset();
+            setCheckAngle();
             topLeft.set(speed);
             bottomLeft.set(speed);
             topRight.set(-speed);
             bottomRight.set(-speed);
+            time.reset();
             while(true){
-                if(turned){
-            try {
-                checkForAngle.wait(100);
-                //TODO this exception might actually hurt us
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-                }else {
-                    break;
+                if(time.get() >= checkTime()){
+                    if(gyro.getAngle() >= Math.PI){
+                        
+                    }
                 }
             }
+            setZeroJag();
     }
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
