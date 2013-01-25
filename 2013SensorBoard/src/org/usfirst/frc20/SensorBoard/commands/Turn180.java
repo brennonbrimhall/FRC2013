@@ -96,11 +96,11 @@ public class  Turn180 extends Command {
             while(true){
                 if(time.get() >= checkTime()){
                     if(gyro.getAngle() >= Math.PI){
-                        
+                        setZeroJag();
+                        break;
                     }
                 }
             }
-            setZeroJag();
     }
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
