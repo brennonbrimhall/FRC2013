@@ -82,8 +82,7 @@ public class OI {
         trigger.whileHeld(new Shoot());
         tIncrementalDown = new JoystickButton(joystick, 7);
         tIncrementalDown.whenReleased(new TiltIncrementalDown());
-
-	    
+            
         // SmartDashboard Buttons
         SmartDashboard.putData("ArcadeDrive", new ArcadeDrive());
 
