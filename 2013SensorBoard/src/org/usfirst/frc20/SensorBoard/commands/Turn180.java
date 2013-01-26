@@ -29,6 +29,7 @@ public class  Turn180 extends Command {
     double angSpeed;
     double speed = .25;
     boolean turned = false;
+    double checTime;
     public Turn180() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -57,6 +58,7 @@ public class  Turn180 extends Command {
         this.speed = speed;
     }
     public void findAngularSpeed(double time,double angle){
+        this.checTime = time;
         this.angSpeed = angle / time;
     }
     public void setCheckAngle(){
@@ -68,6 +70,7 @@ public class  Turn180 extends Command {
         bottomRight.set(-.75);
         //TODO find pout what this value is
         findAngularSpeed(time.get(), gyro.getAngle());
+        this.checkAngle = this.angSpeed * checTime; 
     }
     public double checkTime(){
         return checkAngle / angSpeed;
