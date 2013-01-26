@@ -10,8 +10,7 @@
 
 
 package org.usfirst.frc20.2012PracBot;
-
-import org.usfirst.frc20.2012PracBot.commands.*;
+import org.usfirst.frc20.2012PracBot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.buttons.*;

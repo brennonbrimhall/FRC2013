@@ -37,5 +37,16 @@ public class Tilt extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     }
-}
-
+    //raises the tilter upward tiltIncrementalDown command
+    public void tiltUp(){
+        tiltJag.set(.2);
+    }
+    //raises the tilt down tiltIncrementalUp command
+    public  void tiltDown(){
+        tiltJag.set(-.2);
+    }
+    //makes the tilt static used for the tiltDoNothing command
+    public void doNothing(){
+        tiltJag.set(0);
+    }
+    }

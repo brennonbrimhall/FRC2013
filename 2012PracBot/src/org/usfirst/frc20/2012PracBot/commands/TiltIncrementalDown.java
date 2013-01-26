@@ -17,8 +17,10 @@ import org.usfirst.frc20.2012PracBot.Robot;
 /**
  *
  */
-public class  TiltIncrementalDown extends Command {
 
+public class  TiltIncrementalDown extends Command {
+    Tilt tilt;
+    boolean finished = false;
     public TiltIncrementalDown() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -30,15 +32,17 @@ public class  TiltIncrementalDown extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
+        tilt = Robot.tilt;
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+        tilt.tiltDown();
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return finished;
     }
 
     // Called once after isFinished returns true
@@ -48,5 +52,6 @@ public class  TiltIncrementalDown extends Command {
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
+        finished = true;
     }
 }

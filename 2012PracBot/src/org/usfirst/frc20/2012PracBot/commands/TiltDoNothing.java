@@ -18,7 +18,7 @@ import org.usfirst.frc20.2012PracBot.Robot;
  *
  */
 public class  TiltDoNothing extends Command {
-
+    Tilt tilt;
     public TiltDoNothing() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -30,10 +30,12 @@ public class  TiltDoNothing extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
+        tilt = Robot.tilt;
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+        tilt.doNothing();//method  in the tilt class  that sets the tiltJag  to speed zero
     }
 
     // Make this return true when this Command no longer needs to run execute()

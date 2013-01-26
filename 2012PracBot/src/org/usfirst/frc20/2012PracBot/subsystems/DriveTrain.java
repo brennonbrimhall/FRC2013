@@ -40,8 +40,8 @@ public class DriveTrain extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     }
-    public void arcadeDrive(Joystick joy){
-        
+    public void arcadeDrive(Joystick joy, Joystick xbox){
+        rightJag.set(joy.getMagnitude());
+        leftJag.set(xbox.getMagnitutde());
     }
 }
-

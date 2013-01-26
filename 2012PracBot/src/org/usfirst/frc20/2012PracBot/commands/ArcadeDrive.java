@@ -14,11 +14,15 @@ package org.usfirst.frc20.2012PracBot.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import org.usfirst.frc20.2012PracBot.Robot;
 
+import org.usfirst.frc20.2012PracBot.OI;
+
 /**
  *
  */
 public class  ArcadeDrive extends Command {
     DriveTrain driveTrain;
+    Joystick joy;
+    Joystick xbox;
     public ArcadeDrive() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis
@@ -29,11 +33,15 @@ public class  ArcadeDrive extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
+        driveTrain = Robot.driveTrain;
+        //TODO this joystick code seems very unusual
+        xbox = OI.xbox;
+        joy = OI.joy
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-        driveTrain.
+        driveTrain.arcadeDrive();
     }
 
     // Make this return true when this Command no longer needs to run execute()
