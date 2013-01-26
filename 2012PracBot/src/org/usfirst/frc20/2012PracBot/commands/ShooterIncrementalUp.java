@@ -13,10 +13,6 @@ package org.usfirst.frc20.2012PracBot.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.usfirst.frc20.2012PracBot.Robot;
-
-/**
- *
- */
 public class  ShooterIncrementalUp extends Command {
     Shooter shooter;
     public ShooterIncrementalUp() {
