@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/RobotMap.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/OI.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/Robot.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/commands/Shoot.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/subsystems/DriveTrain.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/commands/ArcadeDrive.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/commands/ShooterIncrementalUp.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/commands/TiltIncrementalDown.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/subsystems/Tilt.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/commands/TiltIncrementalUp.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/subsystems/Shooter.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/commands/ShooterIncrementalDown.java</file>
+        <file>file:/C:/Users/joe/Documents/GitHub/FRC2013/2012PracBot/src/org/usfirst/frc20/2012PracBot/commands/TiltDoNothing.java</file>
+    </open-files>
 </project-private>
