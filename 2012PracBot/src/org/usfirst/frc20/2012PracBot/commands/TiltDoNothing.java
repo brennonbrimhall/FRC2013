@@ -15,6 +15,7 @@ import org.usfirst.frc20.2012PracBot.Robot;
  */
 public class  TiltDoNothing extends Command {
     Tilt tilt;
+    boolean  finish = false;
     public TiltDoNothing() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -26,6 +27,7 @@ public class  TiltDoNothing extends Command {
     // Called just before this Command runs the first time
     protected void initialize() {
         tilt = Robot.tilt;
+        finish = true;
     }
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
@@ -33,7 +35,7 @@ public class  TiltDoNothing extends Command {
     }
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return finish;
     }
     // Called once after isFinished returns true
     protected void end() {

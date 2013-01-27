@@ -13,7 +13,6 @@
  * interface to the commands and command groups that allow control of the robot.
  */
 package org.usfirst.frc20.2012PracBot;
-package org.usfirst.frc20.2012PracBot.*;
 import org.usfirst.frc20.2012PracBot.RobotMap;
 import org.usfirst.frc20.2012PracBot.commands.*;
 import edu.wpi.first.wpilibj.*;
