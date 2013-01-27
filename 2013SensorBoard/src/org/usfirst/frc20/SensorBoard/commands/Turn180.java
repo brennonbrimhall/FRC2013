@@ -96,7 +96,7 @@ public class  Turn180 extends Command {
             topRight.set(-speed);
             bottomRight.set(-speed);
             time.reset();//reset the timer to find the same value as checkTime()
-            while(true){
+            while(true)
                 if(time.get() >= checkTime()){
                     time.reset();
                     if(gyro.getAngle() >= Math.PI){
@@ -104,7 +104,6 @@ public class  Turn180 extends Command {
                         break;
                     }
                 }
-            }
             turned = true;//the command returns this boolean to finish the command
     }
     // Make this return true when this Command no longer needs to run execute()
