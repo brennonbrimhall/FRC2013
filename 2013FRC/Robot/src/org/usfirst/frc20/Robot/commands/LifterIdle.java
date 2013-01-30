@@ -13,9 +13,9 @@ package org.usfirst.frc20.Robot.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.usfirst.frc20.Robot.Robot;
-public class  LifterDown extends Command {
+public class  LifterIdle extends Command {
 
-    public LifterDown() {
+    public LifterIdle() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
 	
@@ -25,7 +25,6 @@ public class  LifterDown extends Command {
     }
     // Called just before this Command runs the first time
     protected void initialize() {
-        Robot.lifter.hookDown();
     }
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {

@@ -10,9 +10,9 @@
 package org.usfirst.frc20.Robot.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import org.usfirst.frc20.Robot.Robot;
-public class  TrayUp extends Command {
+public class  TrayIdle extends Command {
     
-    public TrayUp() {
+    public TrayIdle() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
 	
@@ -23,7 +23,6 @@ public class  TrayUp extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        Robot.tray.raiseTray();
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -32,7 +31,7 @@ public class  TrayUp extends Command {
     }
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return true;
+        return false;
     }
 
     // Called once after isFinished returns true
