@@ -140,7 +140,7 @@ public class OI {
 
         SmartDashboard.putData("DrivetrainArcadeDrive", new DrivetrainArcadeDrive());
 
-        SmartDashboard.putData("DrivetrainDrive", new DrivetrainDrive());
+        //SmartDashboard.putData("DrivetrainDrive", new DrivetrainDrive());
 
         SmartDashboard.putData("DefaultCommand", new DefaultCommand());
 
