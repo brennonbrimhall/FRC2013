@@ -38,5 +38,17 @@ public class Lifter extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     }
+    //reverse the pneumatics so that the piston contract and hold onto the first pyramid bar
+    public void hookUp(){
+        rightLifterCylinder.set(DoubleSolenoid.Value.kReverse);
+        leftLifterCylinder.set(DoubleSolenoid.Value.kReverse);
+    }
+    public void hookDown(){
+        rightLifterCylinder.set(DoubleSolenoid.Value.kForward);
+        leftLifterCylinder.set(DoubleSolenoid.Value.kForward);
+    }
+    public void hookFloatDown(){
+        rightLifterCylinder.set(DoubleSolenoid.Value.kOff);
+        leftLifterCylinder.set(DoubleSolenoid.Value.kOff);
+    }
 }
-
