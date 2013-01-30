@@ -32,9 +32,15 @@ public class Tray extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     }
+    
     public void lowerTray(){
         anglerCylinder.set(DoubleSolenoid.Value.kReverse);
     }
+    
+    public void lowerTrayGently(){
+        anglerCylinder.set(DoubleSolenoid.Value.kOff);
+    }
+    
     public void raiseTray(){
         anglerCylinder.set(DoubleSolenoid.Value.kForward);
     }
