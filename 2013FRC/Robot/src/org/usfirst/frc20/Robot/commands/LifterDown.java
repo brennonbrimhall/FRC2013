@@ -13,10 +13,6 @@ package org.usfirst.frc20.Robot.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.usfirst.frc20.Robot.Robot;
-
-/**
- *
- */
 public class  LifterDown extends Command {
 
     public LifterDown() {
