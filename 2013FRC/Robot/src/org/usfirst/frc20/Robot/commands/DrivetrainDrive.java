@@ -21,7 +21,7 @@ public class  DrivetrainDrive extends Command {
 
 	double outputMagnitude, curve;
 
-    public DrivetrainDrive(oM, c) {
+    public DrivetrainDrive(double oM, double c) {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
 	
@@ -39,7 +39,7 @@ public class  DrivetrainDrive extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	Robot.drivetrain.drive(outputMagnitude, curve));
+    	Robot.drivetrain.drive(outputMagnitude, curve);
     }
 
     // Make this return true when this Command no longer needs to run execute()
