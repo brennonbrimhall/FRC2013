@@ -17,9 +17,9 @@ import org.usfirst.frc20.Robot.Robot;
 /**
  *
  */
-public class  TrayDown extends Command {
+public class  TrayDownGently extends Command {
 
-    public TrayDown() {
+    public TrayDownGently() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
 	
@@ -30,7 +30,7 @@ public class  TrayDown extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        Robot.tray.lowerTray();
+        Robot.tray.lowerTrayGently();
     }
 
     // Called repeatedly when this Command is scheduled to run
