@@ -38,5 +38,16 @@ public class Collector extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     }
+    //drives the roller upward and the belt
+    public void driveUp(){
+        rollerMotor.set(1);
+        beltMotor.set(.5);
+    }
+    //drives the collector motors in reverse, belt too
+    public void driveDown(){
+        rollerMotor.set(-1);
+        beltMotor.set(-.5);
+    }
+    
 }
 
