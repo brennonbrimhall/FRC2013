@@ -15,7 +15,10 @@ import edu.wpi.first.wpilibj.command.Command;
 import org.usfirst.frc20.Robot.Robot;
 
 /**
- *
+ * This command is currently used as a dummy command for the OI buttons 
+ * (RobotBuilder needs all buttons to be associated with commands).  
+ * Be sure to delete this command and all calls to this command in 
+ * production.
  */
 public class  DefaultCommand extends Command {
 
