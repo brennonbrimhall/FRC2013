@@ -45,5 +45,21 @@ public class Drivetrain extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     }
+    
+    public void tankDrive(Joystick leftStick, int leftAxis, Joystick rightStick, int rightAxis){
+        robotDrive.tankDrive(leftStick, leftAxis, rightStick, rightAxis);
+    }
+    
+    public void arcadeDrive(Joystick moveStick, int moveAxis, Joystick rotateStick, int rotateAxis){
+        robotDrive.arcadeDrive(moveStick, moveAxis, rotateStick, rotateAxis);
+    }
+    
+    public void cheesyDrive(Joystick moveStick, int moveAxis, Joystick rotateStick, int rotateAxis){
+        robotDrive.arcadeDrive(moveStick.getRawAxis(moveAxis), rotateStick.getRawAxis(moveAxis)*moveStick.getRawAxis(moveAxis));
+    }
+    
+    public void drive(double outputMagnitude, double curve){
+        robotDrive.drive(outputMagnitude, curve);
+    }
 }
 
