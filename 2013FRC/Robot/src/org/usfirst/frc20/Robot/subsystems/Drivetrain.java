@@ -17,10 +17,10 @@ import org.usfirst.frc20.Robot.Robot;
  *
  */
 public class Drivetrain extends Subsystem {
-    SpeedController leftFront = RobotMap.drivetrainleftFront;
-    SpeedController leftBack = RobotMap.drivetrainleftBack;
-    SpeedController rightFront = RobotMap.drivetrainrightFront;
-    SpeedController rightBack = RobotMap.drivetrainrightBack;
+    public SpeedController leftFront = RobotMap.drivetrainleftFront;
+    public SpeedController leftBack = RobotMap.drivetrainleftBack;
+    public SpeedController rightFront = RobotMap.drivetrainrightFront;
+    public SpeedController rightBack = RobotMap.drivetrainrightBack;
     
     RobotDrive robotDrive = RobotMap.drivetrainRobotDrive;
     
@@ -36,19 +36,31 @@ public class Drivetrain extends Subsystem {
         //setDefaultCommand(new MySpecialCommand());
         
         //setDefaultCommand(new DrivetainArcadeDrive(Robot.oi.driver, 2, Robot.oi.driver, 1));
-        setDefaultCommand(new DrivetrainArcadeDrive());
+        setDefaultCommand(new DrivetrainCheesyDrive());
     }
     
     public void tankDrive(Joystick leftStick, int leftAxis, Joystick rightStick, int rightAxis){
         robotDrive.tankDrive(leftStick, leftAxis, rightStick, rightAxis);
     }
     
-    public void arcadeDrive(Joystick moveStick, int moveAxis, Joystick rotateStick, int rotateAxis){
-        robotDrive.arcadeDrive(moveStick, moveAxis, rotateStick, rotateAxis);
+    public void arcadeDrive(){
+        //Joystick moveStick, int moveAxis, Joystick rotateStick, int rotateAxis
+        //robotDrive.arcadeDrive(moveStick, moveAxis, rotateStick, rotateAxis);
+        
+        //System.out.println("Before:\t"+leftFront.get());
+        //robotDrive.arcadeDrive(moveStick.getRawAxis(moveAxis), rotateStick.getRawAxis(rotateAxis));
+        //robotDrive.arcadeDrive(-(moveStick.getRawAxis(2)), -(rotateStick.getRawAxis(4)/1.25));
+        robotDrive.arcadeDrive(-(Robot.oi.getDriver().getRawAxis(2)), -(Robot.oi.getDriver().getRawAxis(4)/1.25));
+        //robotDrive.arcadeDrive(1.0, 1.0);
+        //System.out.println("Arcade Driving.");
     }
     
-    public void cheesyDrive(Joystick moveStick, int moveAxis, Joystick rotateStick, int rotateAxis){
-        robotDrive.arcadeDrive(moveStick.getRawAxis(moveAxis), rotateStick.getRawAxis(moveAxis)*moveStick.getRawAxis(moveAxis));
+    public void cheesyDrive(){
+        if(Robot.oi.driverLeftBumper.get()){
+            robotDrive.arcadeDrive(0, -(Robot.oi.getDriver().getRawAxis(4)));
+        }else{
+            robotDrive.arcadeDrive(-(Robot.oi.getDriver().getRawAxis(2)), (Robot.oi.getDriver().getRawAxis(2)*Robot.oi.getDriver().getRawAxis(4)));
+        }
     }
     
     public void drive(double outputMagnitude, double curve){

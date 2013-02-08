@@ -93,9 +93,9 @@ public class OI {
         operatorXButton = new JoystickButton(operator, 1);
         operatorXButton.whileHeld(new DefaultCommand());
         operatorBButton = new JoystickButton(operator, 1);
-        operatorBButton.whileHeld(new DefaultCommand());
+        operatorBButton.whenReleased(new DrivetrainArcadeDrive());
         operatorAButton = new JoystickButton(operator, 1);
-        operatorAButton.whileHeld(new DefaultCommand());
+        operatorAButton.whenReleased(new DrivetrainCheesyDrive());
         driver = new Joystick(2);
         
         driverRightJoystickPush = new JoystickButton(driver, 10);
