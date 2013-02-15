@@ -21,9 +21,12 @@ import org.usfirst.frc20.Robot.Logger.Logger;
  */
 public class Shooter extends Subsystem {
     
-    private final double kOn = 12.0;
-    private final double kOff = 0.0;
-    private final double kCollect = -1.2;
+    private final double kVoltageOn = 7.8;
+    private final double kVoltageOff = 0.0;
+    private final double kVoltageCollect = -1.2;
+    private final double kRateOn = 2000;
+    private final double kRateOff = 0;
+    private final double kRateCollect = -100;
     
     Encoder encoder = RobotMap.shooterencoder;
     SpeedController flywheel = RobotMap.shooterflywheel;
@@ -43,16 +46,39 @@ public class Shooter extends Subsystem {
         indexerCylinder.set(DoubleSolenoid.Value.kReverse);
     }
     
-    public void shooterOn(){
-        setShooterVoltage(kOn);
+    public void voltageShooterOn(){
+        setShooterVoltage(kVoltageOn);
     }
     
-    public void shooterOff(){
-        setShooterVoltage(kOff);
+    public void voltageShooterOff(){
+        setShooterVoltage(kVoltageOff);
     }
     
-    public void shooterCollect(){
-        setShooterVoltage(kCollect);
+    public void voltageShooterCollect(){
+        setShooterVoltage(kVoltageCollect);
+    }
+    
+    private void bangBangShooter(double speed){
+        //See Ether's whitepaper here: 
+        //http://www.chiefdelphi.com/media/papers/2663
+        
+        if(encoder.getRate()>speed){
+            flywheel.set(0);
+        }else{
+            flywheel.set(1);
+        }
+    }
+    
+    public void bangBangShooterOn(){
+        bangBangShooter(kRateOn);
+    }
+    
+    public void bangBangShooterOff(){
+        bangBangShooter(kRateOff);
+    }
+    
+    public void bangBangShooterCollect(){
+        bangBangShooter(kRateCollect);
     }
     
     private void setShooterVoltage(double voltage){
