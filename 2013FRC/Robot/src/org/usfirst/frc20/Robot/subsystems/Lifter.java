@@ -16,8 +16,7 @@ import edu.wpi.first.wpilibj.command.Subsystem;
  *
  */
 public class Lifter extends Subsystem {
-    DoubleSolenoid rightLifterCylinder = RobotMap.lifterrightLifterCylinder;
-    DoubleSolenoid leftLifterCylinder = RobotMap.lifterleftLifterCylinder;
+    DoubleSolenoid LifterCylinder = RobotMap.lifterLifterCylinder;
     DigitalInput leftLimitSwitch = RobotMap.lifterleftLimitSwitch;
     DigitalInput rightLimitSwitch = RobotMap.lifterrightLimitSwitch;
     
@@ -33,18 +32,15 @@ public class Lifter extends Subsystem {
     }
     //reverse the pneumatics so that the piston contract and hold onto the first pyramid bar
     public void hookUp(){
-        rightLifterCylinder.set(DoubleSolenoid.Value.kReverse);
-        leftLifterCylinder.set(DoubleSolenoid.Value.kReverse);
+        LifterCylinder.set(DoubleSolenoid.Value.kReverse);
     }
     
     public void hookDown(){
-        rightLifterCylinder.set(DoubleSolenoid.Value.kForward);
-        leftLifterCylinder.set(DoubleSolenoid.Value.kForward);
+        LifterCylinder.set(DoubleSolenoid.Value.kForward);
     }
     
     public void hookFloatDown(){
-        rightLifterCylinder.set(DoubleSolenoid.Value.kOff);
-        leftLifterCylinder.set(DoubleSolenoid.Value.kOff);
+        LifterCylinder.set(DoubleSolenoid.Value.kOff);
     }
     
     public boolean bothPushed(){

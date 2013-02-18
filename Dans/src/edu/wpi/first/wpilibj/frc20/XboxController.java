@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.wpi.first.wpilibj.templates;
+package edu.wpi.first.wpilibj.frc20;
 
 import edu.wpi.first.wpilibj.Joystick;
 
@@ -59,10 +59,10 @@ public class XboxController {
     }
     
     double getRighttX() {
-        return stick.getRawAxis(3);
+        return stick.getRawAxis(4);
     }
     
     double getRightY() {
-        return stick.getRawAxis(4);
+        return stick.getRawAxis(5);
     }
 }

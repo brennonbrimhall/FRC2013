@@ -28,6 +28,7 @@ public class Robot extends IterativeRobot {
     public static Collector collector;
     public static Lifter lifter;
     public static Shooter shooter;
+    public static Indexer indexer;
     
     /**
      * This function is run when the robot is first started up and should be

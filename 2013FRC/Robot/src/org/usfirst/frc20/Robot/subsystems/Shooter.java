@@ -30,20 +30,12 @@ public class Shooter extends Subsystem {
     
     Encoder encoder = RobotMap.shooterencoder;
     SpeedController flywheel = RobotMap.shooterflywheel;
-    DoubleSolenoid indexerCylinder = RobotMap.shooterindexerCylinder;
+    DoubleSolenoid indexerCylinder = RobotMap.indexerstopperCylinder;
 
     public void initDefaultCommand() {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
-        setDefaultCommand(new ShooterOff());
-    }
-    
-    public void indexerOut(){
-        indexerCylinder.set(DoubleSolenoid.Value.kForward);
-    }
-    
-    public void indexerIn(){
-        indexerCylinder.set(DoubleSolenoid.Value.kReverse);
+        setDefaultCommand(new ShooterOn());
     }
     
     public void voltageShooterOn(){

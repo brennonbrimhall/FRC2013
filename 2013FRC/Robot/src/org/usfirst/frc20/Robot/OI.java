@@ -8,10 +8,12 @@
 // update. Deleting the comments indicating the section will prevent
 // it from being updated in th future.
 package org.usfirst.frc20.Robot;
+
 import org.usfirst.frc20.Robot.commands.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.buttons.*;
+
 /**
  * This class is the glue that binds the controls on the physical operator
  * interface to the commands and command groups that allow control of the robot.
@@ -23,33 +25,26 @@ public class OI {
     // number it is.
     // Joystick stick = new Joystick(port);
     // Button button = new JoystickButton(stick, buttonNumber);
-    
+
     // Another type of button you can create is a DigitalIOButton, which is
     // a button or switch hooked up to the cypress module. These are useful if
     // you want to build a customized operator interface.
     // Button button = new DigitalIOButton(1);
-    
     // There are a few additional built in buttons you can use. Additionally,
     // by subclassing Button you can create custom triggers and bind those to
     // commands the same as any other Button.
-    
     //// TRIGGERING COMMANDS WITH BUTTONS
     // Once you have a button, it's trivial to bind it to a button in one of
     // three ways:
-    
     // Start the command when the button is pressed and let it run the command
     // until it is finished as determined by it's isFinished method.
     // button.whenPressed(new ExampleCommand());
-    
     // Run the command while the button is being held down and interrupt it once
     // the button is released.
     // button.whileHeld(new ExampleCommand());
-    
     // Start the command when the button is released  and let it run the command
     // until it is finished as determined by it's isFinished method.
     // button.whenReleased(new ExampleCommand());
-    
-
     public JoystickButton driverAButton;
     public JoystickButton driverBButton;
     public JoystickButton driverXButton;
@@ -72,61 +67,66 @@ public class OI {
     public JoystickButton operatorLeftJoystickPush;
     public JoystickButton operatorRightJoystickPush;
     public Joystick operator;
-    
+    public Joystick third;
+    public JoystickButton one;
+    public JoystickButton two;
+    public JoystickButton three;
+    public JoystickButton four;
+    public JoystickButton five;
+    public JoystickButton six;
+    public JoystickButton seven;
+
     public OI() {
-        operator = new Joystick(1);
-        
-        operatorRightJoystickPush = new JoystickButton(operator, 1);
-        operatorRightJoystickPush.whileHeld(new DefaultCommand());
-        operatorLeftJoystickPush = new JoystickButton(operator, 1);
-        operatorLeftJoystickPush.whileHeld(new DefaultCommand());
-        operatorStartButton = new JoystickButton(operator, 1);
-        operatorStartButton.whileHeld(new DefaultCommand());
-        operatorBackButton = new JoystickButton(operator, 1);
-        operatorBackButton.whileHeld(new DefaultCommand());
-        operatorRightBumper = new JoystickButton(operator, 1);
-        operatorRightBumper.whileHeld(new DefaultCommand());
+        operator = new Joystick(2);
+
+        operatorYButton = new JoystickButton(operator, 10);
+        operatorXButton = new JoystickButton(operator, 9);
+        operatorBButton = new JoystickButton(operator, 8);
+        operatorAButton = new JoystickButton(operator, 7);
+        operatorRightJoystickPush = new JoystickButton(operator, 6);
+        operatorLeftJoystickPush = new JoystickButton(operator, 5);
+        operatorStartButton = new JoystickButton(operator, 4);
+        operatorBackButton = new JoystickButton(operator, 3);
+        operatorRightBumper = new JoystickButton(operator, 2);
         operatorLeftBumper = new JoystickButton(operator, 1);
-        operatorLeftBumper.whileHeld(new DefaultCommand());
-        operatorYButton = new JoystickButton(operator, 1);
-        operatorYButton.whileHeld(new DefaultCommand());
-        operatorXButton = new JoystickButton(operator, 1);
-        operatorXButton.whileHeld(new DefaultCommand());
-        operatorBButton = new JoystickButton(operator, 1);
-        operatorBButton.whenReleased(new DrivetrainArcadeDrive());
-        operatorAButton = new JoystickButton(operator, 1);
-        operatorAButton.whenReleased(new DrivetrainCheesyDrive());
-        driver = new Joystick(2);
-        
+
+        operatorRightJoystickPush.whileHeld(new ShooterAndCollectorOn());
+        operatorLeftJoystickPush.whileHeld(new ShooterAndCollectorOff());
+        operatorStartButton.whileHeld(new ShooterAndCollectorReverse());
+        operatorBackButton.whileHeld(new TrayUp());
+        operatorRightBumper.whileHeld(new TrayDownGently());
+
+        driver = new Joystick(1);
+
         driverRightJoystickPush = new JoystickButton(driver, 10);
-        driverRightJoystickPush.whileHeld(new DefaultCommand());
         driverLeftJoystickPush = new JoystickButton(driver, 9);
-        driverLeftJoystickPush.whileHeld(new DefaultCommand());
         driverStartButton = new JoystickButton(driver, 8);
-        driverStartButton.whileHeld(new DefaultCommand());
         driverBackButton = new JoystickButton(driver, 7);
-        driverBackButton.whileHeld(new DefaultCommand());
         driverRightBumper = new JoystickButton(driver, 6);
-        driverRightBumper.whileHeld(new DefaultCommand());
         driverLeftBumper = new JoystickButton(driver, 5);
-        driverLeftBumper.whileHeld(new DefaultCommand());
         driverYButton = new JoystickButton(driver, 4);
-        driverYButton.whileHeld(new DefaultCommand());
         driverXButton = new JoystickButton(driver, 3);
-        driverXButton.whileHeld(new DefaultCommand());
         driverBButton = new JoystickButton(driver, 2);
-        driverBButton.whileHeld(new DefaultCommand());
         driverAButton = new JoystickButton(driver, 1);
-        driverAButton.whileHeld(new DefaultCommand());
-	    
+        
+        driverRightJoystickPush.whileHeld(new CollectorOn());
+        driverLeftJoystickPush.whileHeld(new CollectorOff());
+        driverStartButton.whileHeld(new CollectorReverse());
+        driverBackButton.whileHeld(new LifterCheckUp());
+        driverRightBumper.whileHeld(new LifterDown());
+        driverLeftBumper.whileHeld(new LifterIdle());
+        driverYButton.whileHeld(new LifterUp());
+        driverXButton.whileHeld(new ShooterAndCollectorOff());
+        driverBButton.whileHeld(new ShooterAndCollectorOn());
+        driverAButton.whileHeld(new ShooterAndCollectorReverse());
+
         // SmartDashboard Buttons
-        SmartDashboard.putData("TrayUp", new TrayUp());
+        /*SmartDashboard.putData("TrayUp", new TrayUp());
         SmartDashboard.putData("TrayDown", new TrayDown());
         SmartDashboard.putData("DrivetrainCheesyDrive", new DrivetrainCheesyDrive());
         SmartDashboard.putData("DrivetrainTankDrive", new DrivetrainTankDrive());
         SmartDashboard.putData("DrivetrainArcadeDrive", new DrivetrainArcadeDrive());
         //SmartDashboard.putData("DrivetrainDrive", new DrivetrainDrive());
-        SmartDashboard.putData("DefaultCommand", new DefaultCommand());
         SmartDashboard.putData("CollectorOn", new CollectorOn());
         SmartDashboard.putData("CollectorOff", new CollectorOff());
         SmartDashboard.putData("CollectorReverse", new CollectorReverse());
@@ -137,13 +137,18 @@ public class OI {
         SmartDashboard.putData("ShooterCollect", new ShooterCollect());
         SmartDashboard.putData("LifterCheckUp", new LifterCheckUp());
         SmartDashboard.putData("Shoot", new Shoot());
-        SmartDashboard.putData("ShooterIndexerOut", new ShooterIndexerOut());
-        SmartDashboard.putData("ShooterIndexerIn", new ShooterIndexerIn());
+        SmartDashboard.putData("IndexerKickerOut", new IndexerKickerOut());
+        SmartDashboard.putData("IndexerKickerIn", new IndexerKickerIn());
+        SmartDashboard.putData("IndexerKickerOff", new IndexerKickerOut());
+        SmartDashboard.putData("IndexerStopperIn", new IndexerStopperIn());
+        SmartDashboard.putData("IndexerStopperOut", new IndexerStopperOut());
+        SmartDashboard.putData("IndexerStopperOff", new IndexerStopperIn());*/
     }
-    
+
     public Joystick getDriver() {
         return driver;
     }
+
     public Joystick getOperator() {
         return operator;
     }

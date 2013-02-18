@@ -38,10 +38,10 @@ public class Shoot extends CommandGroup {
         // arm.
 
         //Turning flywheel on.
-        addParallel(new ShooterOn());
+        /*addParallel(new ShooterOn());
 
         //Releasing indexer.
-        addSequential(new ShooterIndexerIn());
+        addSequential(new IndexerIn());
 
         //Shoot three discs by turning on collector.
         addSequential(new CollectorOnForOneDisc());
@@ -49,7 +49,7 @@ public class Shoot extends CommandGroup {
         addSequential(new CollectorOnForOneDisc());
         
         //Firing the last disk by extending the indexer.
-        addParallel(new ShooterIndexerOut());
-        addParallel(new CollectorOn());
+        addParallel(new IndexerOut());
+        addParallel(new CollectorOn());*/
     }
 }

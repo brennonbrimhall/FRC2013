@@ -4,7 +4,7 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-package edu.wpi.first.wpilibj.templates;
+package edu.wpi.first.wpilibj.frc20;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -26,11 +26,8 @@ public class Robot extends IterativeRobot {
     // Controllers for the drivers to use
     XboxController driverStick;
     XboxController operatorStick;
-    
     // Compressor!
     Compressor compressor;
-    
-    
     // Shooter, Tray, and Collector
     Tray tray;
     Talon shooterTalon;
@@ -40,20 +37,15 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid latchSolenoid;
     DoubleSolenoid indexerSolenoid;
     Encoder shooterEncoder;
-    
     // We will reset the indexer and lock a certain number of cycles after the
     // shooting ends, keep track of how long it has been here
-    int cyclesSinceShooting;
-    
-    
-    
+    int cycleCounter;
     // The drivetrain
     Drivetrain drivetrain;
     Talon fl;
     Talon bl;
     Talon fr;
     Talon br;
-    
     // Lifter
     Lifter lifter;
     DoubleSolenoid lifterSolenoid;
@@ -64,11 +56,23 @@ public class Robot extends IterativeRobot {
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
      */
+    
+    public void init() {
+        tray.lower();
+        //tray.notShoot();
+        //tray.finishShooting();
+        tray.beltOn();
+        tray.collectorOn();
+        lifter.raise();
+        cycleCounter = 0;
+        
+    }
+    
     public void robotInit() {
         driverStick = new XboxController(1);
         operatorStick = new XboxController(2);
-        
-        compressor = new Compressor(1,1);
+
+        compressor = new Compressor(1, 1);
         compressor.start();
 
         fl = new Talon(1);
@@ -82,27 +86,43 @@ public class Robot extends IterativeRobot {
         shooterTalon = new Talon(5);
         beltTalon = new Talon(6);
         collectorTalon = new Talon(7);
-        traySolenoid = new DoubleSolenoid(1,2);
-        latchSolenoid = new DoubleSolenoid(3,4);
-        indexerSolenoid = new DoubleSolenoid(5,6);
-        shooterEncoder = new Encoder(1,2);
-        
-        tray = new Tray(shooterTalon,beltTalon,collectorTalon,traySolenoid,latchSolenoid,indexerSolenoid,shooterEncoder);
-        
-        cyclesSinceShooting = 0;
-        
-        lifterSolenoid = new DoubleSolenoid(7,8);
+        traySolenoid = new DoubleSolenoid(1, 2);
+        latchSolenoid = new DoubleSolenoid(3, 4);
+        indexerSolenoid = new DoubleSolenoid(5, 6);
+        shooterEncoder = new Encoder(4, 5);
+
+        tray = new Tray(shooterTalon, beltTalon, collectorTalon, traySolenoid, latchSolenoid, indexerSolenoid, shooterEncoder);
+
+        cycleCounter = 0;
+
+        lifterSolenoid = new DoubleSolenoid(7, 8);
         leftLimit = new DigitalInput(2);
         rightLimit = new DigitalInput(3);
-        
-        lifter = new Lifter(lifterSolenoid,leftLimit,rightLimit);
 
+        lifter = new Lifter(lifterSolenoid, leftLimit, rightLimit);
+
+    }
+
+    public void autonomousInit() {
+        init();
     }
 
     /**
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
+        cycleCounter += 1;
+        if (cycleCounter < 300) {
+            tray.shoot();
+        } else {
+            tray.notShoot();
+        } 
+        tray.update();
+
+    }
+
+    public void teleopInit() {
+        init();
     }
 
     /**
@@ -111,48 +131,53 @@ public class Robot extends IterativeRobot {
     public void teleopPeriodic() {
 
         // Drive the robzot
-        drivetrain.arcadeDrive(driverStick.getLeftY(), driverStick.getRighttX());
-        
+        drivetrain.safeArcadeDrive(driverStick.getLeftY(), driverStick.getRighttX(),
+                    lifter.leftOnPyramid(),lifter.rightOnPyramid());
+
         // Raise and slower the tray using A and B buttons
-        if(operatorStick.getA()) {
+        if (operatorStick.getA()) {
             tray.raise();
         }
-        if(operatorStick.getB()) {
+        if (operatorStick.getB()) {
             tray.lower();
         }
-        
+
         // Raise and lower the lifters using the left bumper and either
         // the limit switches or the right bumper
-        if(driverStick.getLeftBumper() && (driverStick.getRightBumper() || (lifter.isOnPyramid()))) {
+        if (driverStick.getLeftBumper() && (driverStick.getRightBumper() || (lifter.isOnPyramid()))) {
             lifter.lower();
         }
-        if(driverStick.getBack()) {
+        if (driverStick.getBack()) {
             lifter.raise();
         }
-        if(driverStick.getStart()) {
+        if (driverStick.getStart()) {
             lifter.release();
         }
-        
+
         // Request to turn on and off the collector.
         // If we are shooting the requests will be ignored
-        if(driverStick.getA()) {
+        if (driverStick.getA()) {
             tray.collectorOn();
         }
-        if(driverStick.getB()) {
+        if (driverStick.getB()) {
             tray.collectorOff();
         }
-        
-        // Shoot!
-        if(operatorStick.getLeftBumper() && (operatorStick.getRightBumper() || (lifter.isOnPyramid()))) {
-            tray.startShooting();
-            cyclesSinceShooting = 0;
-        } else {
-            tray.stopShooting();
-            cyclesSinceShooting += 1;
-            if(cyclesSinceShooting == 5) {
-                tray.resetIndexer();
-            }
+        if (driverStick.getX()) {
+            tray.collectorReverse();
         }
+
+        // Shoot!
+        if (operatorStick.getLeftBumper() && (operatorStick.getRightBumper() || (lifter.isOnPyramid()))) {
+            tray.shoot();
+            cycleCounter = 0;
+        } else {
+            tray.notShoot();/*
+            cycleCounter += 1;
+            if (cycleCounter == 50) {
+                tray.finishShooting();
+            }*/
+        }
+        tray.update();
 
     }
 

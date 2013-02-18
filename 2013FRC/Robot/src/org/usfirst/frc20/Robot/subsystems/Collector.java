@@ -20,12 +20,12 @@ public class Collector extends Subsystem {
     SpeedController beltMotor = RobotMap.collectorbeltMotor;
     SpeedController rollerMotor = RobotMap.collectorrollerMotor;
 
-    private final double kRollerUpSpeed = 1.0;
-    private final double kRollerDownSpeed = -1.0;
+    private final double kRollerUpSpeed = -1.0;
+    private final double kRollerDownSpeed = 1.0;
     private final double kRollerOffSpeed = 0.0;
-    private final double kBeltUpSpeed = 1.0;
+    private final double kBeltUpSpeed = -1.0;
     private final double kBeltIdleSpeed = 0.5;
-    private final double kBeltDownSpeed = -1.0;
+    private final double kBeltDownSpeed = 1.0;
     private final double kBeltOffSpeed = 0.0;
     public final double kDiscShootTimeInSeconds = .5;
     public final long kWaitAfterShotTimeInMillis = 500;

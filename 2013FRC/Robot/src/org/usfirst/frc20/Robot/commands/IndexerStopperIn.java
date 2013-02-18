@@ -13,16 +13,16 @@ import org.usfirst.frc20.Robot.Robot;
 /**
  *
  */
-public class  ShooterIndexerOut extends Command {
-    public ShooterIndexerOut() {
+public class  IndexerStopperIn extends Command {
+    public IndexerStopperIn() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
-	
-        requires(Robot.shooter);
+
+        requires(Robot.indexer);
     }
     // Called just before this Command runs the first time
     protected void initialize() {
-        Robot.shooter.indexerOut();
+        Robot.indexer.stopperIn();
     }
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
