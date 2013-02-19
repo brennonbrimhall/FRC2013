@@ -4,6 +4,7 @@
  */
 package org.usfirst.frc20.PrototypingBoard.Logger;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.DriverStationLCD.Line;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -95,5 +96,9 @@ public class RealTimeLogger extends Logger{
         DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, "                     ");
         DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, message);
         DriverStationLCD.getInstance().updateLCD();
+    }
+    public void printVoltage(){
+        double volt = DriverStation.getInstance().getBatteryVoltage(); 
+        userMessage(String.valueOf(volt));
     }
 }
