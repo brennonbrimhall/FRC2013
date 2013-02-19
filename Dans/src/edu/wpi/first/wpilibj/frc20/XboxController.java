@@ -65,4 +65,8 @@ public class XboxController {
     double getRightY() {
         return stick.getRawAxis(5);
     }
+    
+    double getAnalogTriggers() {
+        return stick.getRawAxis(3);
+    }
 }

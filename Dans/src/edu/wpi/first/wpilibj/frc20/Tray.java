@@ -293,6 +293,8 @@ public class Tray {
                 pwm = -1.0;
                 DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Low battery!");
             }
+            
+            DriverStationLCD.getInstance().updateLCD();
 
             //Verifying that we've been below for at least 5 cycles before we say we shot the disc
             if (/*speedSensor2.get()*/ encoder.getRate()<kFlywheelLowSpeedThreshold) {

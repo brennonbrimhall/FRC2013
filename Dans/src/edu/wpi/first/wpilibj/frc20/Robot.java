@@ -94,6 +94,7 @@ public class Robot extends IterativeRobot {
         latchSolenoid = new DoubleSolenoid(3, 4);
         indexerSolenoid = new DoubleSolenoid(5, 6);
         shooterEncoder = new Encoder(4, 5);
+        shooterEncoder.start();
 
         tray = new Tray(shooterTalon, beltTalon, collectorTalon, traySolenoid, latchSolenoid, indexerSolenoid, shooterEncoder);
 
@@ -119,7 +120,9 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
         cycleCounter += 1;
-        if (cycleCounter < 300) {
+        if (cycleCounter < 400) {
+            
+        } else if (cycleCounter < 500) {
             tray.shoot();
         } else {
             tray.notShoot();
@@ -149,9 +152,9 @@ public class Robot extends IterativeRobot {
             rightLight.set(Relay.Value.kOff);
         }
 
-        // Drive the robzot
-        drivetrain.safeArcadeDrive(driverStick.getLeftY(), driverStick.getRighttX(),
-                    lifter.leftOnPyramid(),lifter.rightOnPyramid());
+        // Drive the robot
+        drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(),
+                    lifter.leftOnPyramid(),lifter.rightOnPyramid(), Math.abs(driverStick.getAnalogTriggers())>.85);
 
         // Raise and slower the tray using A and B buttons
         if (operatorStick.getA()) {
@@ -188,7 +191,7 @@ public class Robot extends IterativeRobot {
         // Shoot!
         if (operatorStick.getLeftBumper() && (operatorStick.getRightBumper() || (lifter.isOnPyramid()))) {
             tray.shoot();
-            cycleCounter = 0;
+            //cycleCounter = 0;
         } else {
             tray.notShoot();/*
             cycleCounter += 1;
@@ -204,5 +207,10 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during test mode
      */
     public void testPeriodic() {
+        compressor.start();
+    }
+    
+    public void disabledInit(){
+        System.out.println("Bobby, Phil: Done loading code.");
     }
 }
