@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Talon;
 
 /**
@@ -51,6 +52,9 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid lifterSolenoid;
     DigitalInput leftLimit;
     DigitalInput rightLimit;
+    
+    Relay leftLight;
+    Relay rightLight;
 
     /**
      * This function is run when the robot is first started up and should be
@@ -100,9 +104,12 @@ public class Robot extends IterativeRobot {
         rightLimit = new DigitalInput(3);
 
         lifter = new Lifter(lifterSolenoid, leftLimit, rightLimit);
+        
+        leftLight = new Relay(2);
+        rightLight = new Relay(3);
 
     }
-
+    
     public void autonomousInit() {
         init();
     }
@@ -129,6 +136,18 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
+        
+        // Turn the lights on and off
+        if(lifter.leftOnPyramid()) {
+            leftLight.set(Relay.Value.kForward);
+        } else {
+            leftLight.set(Relay.Value.kOff);
+        }
+        if(lifter.rightOnPyramid()) {
+            rightLight.set(Relay.Value.kForward);
+        } else {
+            rightLight.set(Relay.Value.kOff);
+        }
 
         // Drive the robzot
         drivetrain.safeArcadeDrive(driverStick.getLeftY(), driverStick.getRighttX(),

@@ -38,14 +38,14 @@ public class Drivetrain {
     }
 
     void arcadeDrive(double speed, double turn) {
-        leftSpeed = speed-turn;
-        rightSpeed = -speed-turn;
+        leftSpeed = -speed+turn;
+        rightSpeed = speed+turn;
         driveMotors();
     }
 
     void safeArcadeDrive(double speed, double turn, boolean leftHit, boolean rightHit) {
-        leftSpeed = speed-turn;
-        rightSpeed = -speed-turn;
+        leftSpeed = -speed+turn;
+        rightSpeed = speed+turn;
         if(leftHit && leftSpeed < -kMaxPyramidSpeed) {
             leftSpeed = -kMaxPyramidSpeed;
         }

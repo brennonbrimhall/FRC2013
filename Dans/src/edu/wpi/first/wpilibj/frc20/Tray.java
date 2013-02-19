@@ -227,7 +227,7 @@ public class Tray {
         }
 
         void setOn() {
-            collectorTalon.set(-kCollectorSpeed);
+            collectorTalon.set(kCollectorSpeed);
         }
 
         void setOff() {
@@ -235,7 +235,7 @@ public class Tray {
         }
 
         void setReverse() {
-            collectorTalon.set(kCollectorSpeed);
+            collectorTalon.set(-kCollectorSpeed);
         }
     }
 
@@ -284,13 +284,14 @@ public class Tray {
         void update() {
             System.out.println(encoder.getRate());
             //For now, use PWM based on battery voltage.
-            double pwm = kShooterVoltage / DriverStation.getInstance().getBatteryVoltage();
+            double pwm = -kShooterVoltage / DriverStation.getInstance().getBatteryVoltage();
+            DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, Double.toString(pwm));
             if (pwm > 1.0) {
                 pwm = 1.0;
-                DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, "Low battery!");
+                DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Low battery!");
             } else if (pwm < -1.0) {
                 pwm = -1.0;
-                DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, "Low battery!");
+                DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Low battery!");
             }
 
             //Verifying that we've been below for at least 5 cycles before we say we shot the disc
