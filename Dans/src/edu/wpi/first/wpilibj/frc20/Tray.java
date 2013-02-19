@@ -164,6 +164,12 @@ public class Tray {
             belt.setOff();
         }
     }
+    
+    void beltReverse() {
+        if (!isShooting) {
+            belt.setReverse();
+        }
+    }
 
     void shoot() {
         if (isTrayMoving) {

@@ -26,7 +26,7 @@ public class Robot extends IterativeRobot {
 
     // Controllers for the drivers to use
     XboxController driverStick;
-    XboxController operatorStick;
+    LogitechDualActionController operatorStick;
     // Compressor!
     Compressor compressor;
     // Shooter, Tray, and Collector
@@ -74,7 +74,7 @@ public class Robot extends IterativeRobot {
     
     public void robotInit() {
         driverStick = new XboxController(1);
-        operatorStick = new XboxController(2);
+        operatorStick = new LogitechDualActionController(2);
 
         compressor = new Compressor(1, 1);
         compressor.start();
@@ -151,17 +151,36 @@ public class Robot extends IterativeRobot {
         } else {
             rightLight.set(Relay.Value.kOff);
         }
+        
 
         // Drive the robot
         drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(),
                     lifter.leftOnPyramid(),lifter.rightOnPyramid(), Math.abs(driverStick.getAnalogTriggers())>.85);
 
         // Raise and slower the tray using A and B buttons
-        if (operatorStick.getA()) {
+        if (operatorStick.getButton(6)) {
             tray.raise();
         }
-        if (operatorStick.getB()) {
+        if (operatorStick.getButton(8)) {
             tray.lower();
+        }
+        if (operatorStick.getButton(4)){
+            tray.collectorOn();
+        }
+        if (operatorStick.getButton(3) || operatorStick.getButton(1)){
+            tray.collectorOff();
+        }
+        if (operatorStick.getButton(2)){
+            tray.collectorReverse();
+        }
+        if (operatorStick.dPadUp()){
+            tray.beltOn();
+        }
+        if (operatorStick.dPadLeft() || operatorStick.dPadRight()){
+            tray.beltOff();
+        }
+        if (operatorStick.dPadDown()){
+            tray.beltReverse();
         }
 
         // Raise and lower the lifters using the left bumper and either
@@ -169,13 +188,9 @@ public class Robot extends IterativeRobot {
         if (driverStick.getLeftBumper() && (driverStick.getRightBumper() || (lifter.isOnPyramid()))) {
             lifter.lower();
         }
-        if (driverStick.getBack()) {
+        if (driverStick.getB()) {
             lifter.raise();
         }
-        if (driverStick.getStart()) {
-            lifter.release();
-        }
-
         // Request to turn on and off the collector.
         // If we are shooting the requests will be ignored
         if (driverStick.getA()) {
@@ -189,7 +204,7 @@ public class Robot extends IterativeRobot {
         }
 
         // Shoot!
-        if (operatorStick.getLeftBumper() && (operatorStick.getRightBumper() || (lifter.isOnPyramid()))) {
+        if (operatorStick.getButton(5) && (operatorStick.getButton(7) || (lifter.isOnPyramid()))) {
             tray.shoot();
             //cycleCounter = 0;
         } else {
