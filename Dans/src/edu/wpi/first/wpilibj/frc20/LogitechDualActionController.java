@@ -27,15 +27,15 @@ public class LogitechDualActionController {
     }
     
     boolean dPadRight() {
-        return stick.getRawAxis(5) > 5;
+        return stick.getRawAxis(5) > .5;
     }
     
     boolean dPadDown() {
-        return stick.getRawAxis(6) < -.5;
+        return stick.getRawAxis(6) > .5;
     }
     
     boolean dPadUp() {
-        return stick.getRawAxis(6) > .5;
+        return stick.getRawAxis(6) < -.5;
     }
     
     double getLeftX() {

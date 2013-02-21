@@ -19,7 +19,7 @@ public class Tray {
 
     //Constants
     final int kTrayUp = 1;
-    final int kTrayNeutral = 0;
+    //final int kTrayNeutral = 0;
     final int kTrayDown = -1;
     final double kCollectorSpeed = -1.0;
     final double kBeltSpeed = -1.0;
@@ -55,19 +55,18 @@ public class Tray {
         latch = new Latch(latchSolenoid);
         indexer = new Indexer(indexerSolenoid);
 
+        
+    }
+
+    void reset() {
+        numCycles = 0;
+        isTrayMoving = false;
+        isShooting = false;
+        latch.lock();
         belt.setOn();
         collector.setOn();
-        lifter.raise();
-        latch.lock();
-        indexer.push();
-        isShooting = false;
-        isTrayMoving = false;
-        trayDirection = kTrayDown;
-        numCycles = 0;
-
-
-
-
+        trayDirection = kTrayUp;
+        lower();
     }
 
     void update() {
@@ -75,15 +74,22 @@ public class Tray {
         if (isTrayMoving) {
             numCycles += 1;
             if (numCycles < kIndexerCyclesBeforeTrayMoved) {
-                indexer.push();
+                if (trayDirection == kTrayUp) {
+                    indexer.push();
+                } else {
+                    numCycles = kIndexerCyclesBeforeTrayMoved;
+
+                }
             } else if (numCycles < kIndexerCyclesAfterTrayMoved) {
                 if (trayDirection == kTrayUp) {
                     lifter.raise();
+                    isTrayMoving = false;
                 } else if (trayDirection == kTrayDown) {
                     lifter.lower();
-                } else if (trayDirection == kTrayNeutral) {
-                    lifter.release();
-                }
+
+                } /*else if (trayDirection == kTrayNeutral) {
+                 lifter.release();
+                 }*/
             } else {
                 indexer.pull();
                 isTrayMoving = false;
@@ -112,28 +118,29 @@ public class Tray {
             isTrayMoving = true;
             //lifter.lower();
             numCycles = 0;
-        } else if (trayDirection == kTrayNeutral) {
-            trayDirection = kTrayDown;
-            isTrayMoving = true;
-            lifter.lower();
-        }
+        } /*else if (trayDirection == kTrayNeutral) {
+         trayDirection = kTrayDown;
+         isTrayMoving = true;
+         lifter.lower();
+         }*/
     }
-
-    void release() {
-        if (isShooting) {
-            return;
-        }
-        if (trayDirection == kTrayUp) {
-            trayDirection = kTrayNeutral;
-            isTrayMoving = true;
-            //lifter.release();
-            numCycles = 0;
-        } else if (trayDirection == kTrayDown) {
-            trayDirection = kTrayNeutral;
-            isTrayMoving = true;
-            lifter.release();
-        }
-    }
+    /*
+     void release() {
+     if (isShooting) {
+     return;
+     }
+     if (trayDirection == kTrayUp) {
+     trayDirection = kTrayNeutral;
+     isTrayMoving = true;
+     //lifter.release();
+     numCycles = 0;
+     } else if (trayDirection == kTrayDown) {
+     trayDirection = kTrayNeutral;
+     isTrayMoving = true;
+     lifter.release();
+     }
+     }
+     */
 
     void collectorOn() {
         if (!isShooting) {
@@ -164,11 +171,21 @@ public class Tray {
             belt.setOff();
         }
     }
-    
+
     void beltReverse() {
         if (!isShooting) {
             belt.setReverse();
         }
+    }
+    
+    void allOff() {
+        belt.setOff();
+        collector.setOff();
+        flywheel.setOff();
+    }
+    
+    void shooterOn() {
+        flywheel.setOn();
     }
 
     void shoot() {
@@ -277,6 +294,7 @@ public class Tray {
         int numCyclesBelow;
         int discsShot;
         boolean on = true;
+        boolean driverOff = false;
         //DigitalInput speedSensor;
         //DigitalInput speedSensor2;
 
@@ -288,6 +306,9 @@ public class Tray {
         }
 
         void update() {
+            if(driverOff) {
+                return;
+            }
             System.out.println(encoder.getRate());
             //For now, use PWM based on battery voltage.
             double pwm = -kShooterVoltage / DriverStation.getInstance().getBatteryVoltage();
@@ -299,11 +320,11 @@ public class Tray {
                 pwm = -1.0;
                 DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Low battery!");
             }
-            
+
             DriverStationLCD.getInstance().updateLCD();
 
             //Verifying that we've been below for at least 5 cycles before we say we shot the disc
-            if (/*speedSensor2.get()*/ encoder.getRate()<kFlywheelLowSpeedThreshold) {
+            if (/*speedSensor2.get()*/encoder.getRate() < kFlywheelLowSpeedThreshold) {
                 numCyclesBelow++;
             } else {
                 numCyclesBelow = 0;
@@ -335,6 +356,14 @@ public class Tray {
         boolean atSpeed() {
             return true; /*speedSensor.get();*/
             //return encoder.getRate() > shooterSetSpeed;
+        }
+        
+        void setOn() {
+            driverOff = false;
+        }
+        
+        void setOff() {
+            driverOff = true;
         }
     }
 
@@ -393,7 +422,7 @@ public class Tray {
 
         void pull() {
             sol.set(DoubleSolenoid.Value.kReverse);
-        
+
         }
     }
 }

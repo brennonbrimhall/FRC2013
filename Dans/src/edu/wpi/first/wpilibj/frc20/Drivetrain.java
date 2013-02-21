@@ -6,6 +6,7 @@ package edu.wpi.first.wpilibj.frc20;
 
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Gyro;
 
 /**
  *
@@ -13,23 +14,23 @@ import edu.wpi.first.wpilibj.Talon;
  */
 public class Drivetrain {
 
-    final double kMaxPyramidSpeed = .2;
-    
+    final double kMaxPyramidSpeed = .1;
     //Deadband for speed function.  Talons have a 4% deadband threshold built in.
     final double deadbandThreshold = 0.06; //6%
-    
     Talon frontLeft;
     Talon backLeft;
     Talon frontRight;
     Talon backRight;
+    Gyro gyro;
     double leftSpeed;
     double rightSpeed;
 
-    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight) {
+    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro) {
         this.frontLeft = frontLeft;
         this.backLeft = backLeft;
         this.frontRight = frontRight;
         this.backRight = backRight;
+        this.gyro = gyro;
     }
 
     private void driveMotors() {
@@ -37,6 +38,7 @@ public class Drivetrain {
         backLeft.set(leftSpeed);
         frontRight.set(rightSpeed);
         backRight.set(rightSpeed);
+        System.out.println("Gyro: " + gyro.getAngle());
     }
 
     void arcadeDrive(double speed, double turn) {
@@ -57,12 +59,23 @@ public class Drivetrain {
         driveMotors();
     }
 
-    void safeCheesyDrive(double speed, double turn, boolean leftHit, boolean rightHit, boolean turnInPlace) {
-        if (turnInPlace) {
-            safeArcadeDrive(0, speedFunction(turn), leftHit, rightHit);
+    void safeCheesyDrive(double speed, double cheesyTurn, double hardTurn, boolean leftHit, boolean rightHit) {
+        double s = speedFunction(speed);
+        if (s > 0) {
+            safeArcadeDrive(speedFunction(speed), speedFunction(speed) * cheesyTurn + hardTurn, leftHit, rightHit);
         } else {
-            safeArcadeDrive(speedFunction(speed), -speedFunction(speed) * turn, leftHit, rightHit);
+            safeArcadeDrive(speedFunction(speed), -speedFunction(speed) * cheesyTurn + hardTurn, leftHit, rightHit);
         }
+    }
+
+    double heaviside(double x) {
+        if (x > 0) {
+            return 1;
+        }
+        if (x < 0) {
+            return -1;
+        }
+        return 0;
     }
 
     double speedFunction(double x) {
@@ -76,11 +89,15 @@ public class Drivetrain {
         //int sign = 0; //Defaulting to no movement if not within deadband.
 
         /*if (x > deadbandThreshold) {
-            sign = 1; //You're positive and out of deadband
-        } else if (x < -deadbandThreshold) {
-            sign = -1; //You;re negative and out of deadband
-        }*/
+         sign = 1; //You're positive and out of deadband
+         } else if (x < -deadbandThreshold) {
+         sign = -1; //You;re negative and out of deadband
+         }*/
 
-        return ((x * x * x * x * x) + (x)) / 2;
+        return heaviside(x) * Math.abs(((x * x * x * x * x) + (x)) / 2);
+    }
+
+    void resetGyro() {
+        gyro.reset();
     }
 }

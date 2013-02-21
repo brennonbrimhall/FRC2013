@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
@@ -47,6 +48,7 @@ public class Robot extends IterativeRobot {
     Talon bl;
     Talon fr;
     Talon br;
+    Gyro gyro;
     // Lifter
     Lifter lifter;
     DoubleSolenoid lifterSolenoid;
@@ -62,13 +64,10 @@ public class Robot extends IterativeRobot {
      */
     
     public void init() {
-        tray.lower();
-        //tray.notShoot();
-        //tray.finishShooting();
-        tray.beltOn();
-        tray.collectorOn();
+        tray.reset();
         lifter.raise();
         cycleCounter = 0;
+        drivetrain.resetGyro();
         
     }
     
@@ -84,8 +83,9 @@ public class Robot extends IterativeRobot {
         fr = new Talon(3);
         br = new Talon(4);
 
+        gyro = new Gyro(1);
 
-        drivetrain = new Drivetrain(fl, bl, fr, br);
+        drivetrain = new Drivetrain(fl, bl, fr, br, gyro);
 
         shooterTalon = new Talon(5);
         beltTalon = new Talon(6);
@@ -120,13 +120,22 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
         cycleCounter += 1;
-        if (cycleCounter < 400) {
+        if (cycleCounter < 100) {
             
+        } else
+        if (cycleCounter < 400) {
+            if(!lifter.isOnPyramid()) {
+                drivetrain.safeArcadeDrive(-.1, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+            } else {
+                drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+            }
         } else if (cycleCounter < 500) {
+            drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
             tray.shoot();
         } else {
+            drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
             tray.notShoot();
-        } 
+        }
         tray.update();
 
     }
@@ -154,8 +163,8 @@ public class Robot extends IterativeRobot {
         
 
         // Drive the robot
-        drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(),
-                    lifter.leftOnPyramid(),lifter.rightOnPyramid(), Math.abs(driverStick.getAnalogTriggers())>.85);
+        drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(),driverStick.getAnalogTriggers(),
+                    lifter.leftOnPyramid(),lifter.rightOnPyramid());
 
         // Raise and slower the tray using A and B buttons
         if (operatorStick.getButton(6)) {
@@ -182,6 +191,12 @@ public class Robot extends IterativeRobot {
         if (operatorStick.dPadDown()){
             tray.beltReverse();
         }
+        if(operatorStick.getButton(9)) {
+            tray.allOff();
+        }
+        if(operatorStick.getButton(10)) {
+            tray.shooterOn();
+        }
 
         // Raise and lower the lifters using the left bumper and either
         // the limit switches or the right bumper
@@ -191,16 +206,11 @@ public class Robot extends IterativeRobot {
         if (driverStick.getB()) {
             lifter.raise();
         }
-        // Request to turn on and off the collector.
-        // If we are shooting the requests will be ignored
-        if (driverStick.getA()) {
-            tray.collectorOn();
+        if(driverStick.getX()) {
+            lifter.disableSwitch();
         }
-        if (driverStick.getB()) {
-            tray.collectorOff();
-        }
-        if (driverStick.getX()) {
-            tray.collectorReverse();
+        if(driverStick.getY()) {
+            lifter.enableSwitch();
         }
 
         // Shoot!
@@ -221,7 +231,7 @@ public class Robot extends IterativeRobot {
     /**
      * This function is called periodically during test mode
      */
-    public void testPeriodic() {
+    public void testInit() {
         compressor.start();
     }
     

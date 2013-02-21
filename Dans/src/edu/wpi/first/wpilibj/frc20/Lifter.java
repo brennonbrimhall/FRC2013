@@ -12,40 +12,61 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
  * @author freshplum
  */
 public class Lifter {
-    
+
     DoubleSolenoid lifterSolenoid;
     DigitalInput leftLimit;
     DigitalInput rightLimit;
-    
+    boolean switchOverride;
+
     Lifter(DoubleSolenoid lifterSolenoid,
-           DigitalInput leftLimit, DigitalInput rightLimit) {
+            DigitalInput leftLimit, DigitalInput rightLimit) {
         this.lifterSolenoid = lifterSolenoid;
         this.leftLimit = leftLimit;
         this.rightLimit = rightLimit;
+        switchOverride = false;
     }
-    
+
+    void disableSwitch() {
+        switchOverride = true;
+    }
+
+    void enableSwitch() {
+        switchOverride = false;
+    }
+
     void raise() {
         lifterSolenoid.set(DoubleSolenoid.Value.kForward);
     }
-    
+
     void lower() {
         lifterSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
-    
+
     void release() {
         lifterSolenoid.set(DoubleSolenoid.Value.kOff);
     }
-    
+
     boolean isOnPyramid() {
-        return leftLimit.get() && rightLimit.get();
+        if (!switchOverride) {
+            return leftLimit.get() && rightLimit.get();
+        } else {
+            return true;
+        }
     }
-    
+
     boolean leftOnPyramid() {
-        return leftLimit.get();
+        if (!switchOverride) {
+            return leftLimit.get();
+        } else {
+            return true;
+        }
     }
-    
+
     boolean rightOnPyramid() {
-        return rightLimit.get();
+        if (!switchOverride) {
+            return rightLimit.get();
+        } else {
+            return true;
+        }
     }
-    
 }
