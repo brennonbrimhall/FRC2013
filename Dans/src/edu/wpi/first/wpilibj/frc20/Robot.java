@@ -24,7 +24,8 @@ import edu.wpi.first.wpilibj.Talon;
  * directory.
  */
 public class Robot extends IterativeRobot {
-
+    //Watchdog to send statuses to the Drivers
+    StatusPrinter statusPrinter;
     // Controllers for the drivers to use
     XboxController driverStick;
     LogitechDualActionController operatorStick;
@@ -97,6 +98,7 @@ public class Robot extends IterativeRobot {
         shooterEncoder.start();
 
         tray = new Tray(shooterTalon, beltTalon, collectorTalon, traySolenoid, latchSolenoid, indexerSolenoid, shooterEncoder);
+        statusPrinter = new StatusPrinter(tray);
 
         cycleCounter = 0;
 
@@ -137,6 +139,7 @@ public class Robot extends IterativeRobot {
             tray.notShoot();
         }
         tray.update();
+        statusPrinter.printStatuses();
 
     }
 
@@ -225,6 +228,7 @@ public class Robot extends IterativeRobot {
             }*/
         }
         tray.update();
+        statusPrinter.printStatuses();
 
     }
 
@@ -235,7 +239,11 @@ public class Robot extends IterativeRobot {
         compressor.start();
     }
     
+    public void testPeriodic() {
+        statusPrinter.printStatuses();
+    }
+    
     public void disabledInit(){
-        System.out.println("Bobby, Phil: Done loading code.");
+        System.out.println("ROBOT DISABLED / Bobby, Phil: Done loading code.");
     }
 }
