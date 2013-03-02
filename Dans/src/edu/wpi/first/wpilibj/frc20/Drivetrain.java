@@ -62,9 +62,9 @@ public class Drivetrain {
     void safeCheesyDrive(double speed, double cheesyTurn, double hardTurn, boolean leftHit, boolean rightHit) {
         double s = speedFunction(speed);
         if (s > 0) {
-            safeArcadeDrive(speedFunction(speed), speedFunction(speed) * cheesyTurn + hardTurn, leftHit, rightHit);
+            safeArcadeDrive(speedFunction(speed), speedFunction(speed) * cheesyTurn - hardTurn, leftHit, rightHit);
         } else {
-            safeArcadeDrive(speedFunction(speed), -speedFunction(speed) * cheesyTurn + hardTurn, leftHit, rightHit);
+            safeArcadeDrive(speedFunction(speed), -speedFunction(speed) * cheesyTurn - hardTurn, leftHit, rightHit);
         }
     }
 

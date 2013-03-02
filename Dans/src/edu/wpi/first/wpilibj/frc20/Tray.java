@@ -7,7 +7,6 @@ package edu.wpi.first.wpilibj.frc20;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Talon;
 
@@ -24,7 +23,6 @@ public class Tray {
     final double kCollectorSpeed = -1.0;
     final double kBeltSpeed = -1.0;
     final double kShooterSetSpeed = 1000;
-    final double kShooterVoltage = 8.4;
     public final int kIndexerCyclesAfterTrayMoved = 300;
     public final int kIndexerCyclesBeforeTrayMoved = 100;
     public final int kNumCyclesAfterShooting = 50;
@@ -55,7 +53,7 @@ public class Tray {
         latch = new Latch(latchSolenoid);
         indexer = new Indexer(indexerSolenoid);
 
-        
+
     }
 
     void reset() {
@@ -177,13 +175,13 @@ public class Tray {
             belt.setReverse();
         }
     }
-    
+
     void allOff() {
         belt.setOff();
         collector.setOff();
         flywheel.setOff();
     }
-    
+
     void shooterOn() {
         flywheel.setOn();
     }
@@ -239,6 +237,50 @@ public class Tray {
         latch.lock();
         isShooting = false;
     }
+    
+    boolean isCollectorOn() {
+        return collector.isOn();
+    }
+    
+    boolean isCollectorReverse() {
+        return collector.isReverse();
+    }
+    
+    boolean isBeltOn() {
+        return belt.getOn();
+    }
+    
+    boolean isBeltOff() {
+        return belt.getOff();
+    }
+    
+    boolean isBeltReverse() {
+        return belt.getReverse();
+    }
+    
+    boolean isFlywheelLowBattery() {
+        return flywheel.lowBattery;
+    }
+    
+    boolean isLatchOut() {
+        return latch.isLocked();
+    }
+    
+    boolean isLatchIn() {
+        return latch.isReleased();
+    }
+    
+    boolean isIndexerIn() {
+        return indexer.isPushing();
+    }
+    
+    boolean isIndexerOut() {
+        return indexer.isPulling();
+    }
+    
+    double flywheelEncoderRate() {
+        return flywheel.getEncoderRate();
+    }
 
     //Private class to represent Collector
     private class Collector {
@@ -259,6 +301,14 @@ public class Tray {
 
         void setReverse() {
             collectorTalon.set(-kCollectorSpeed);
+        }
+        
+        boolean isOn() {
+            return (collectorTalon.get() == kCollectorSpeed);
+        }
+        
+        boolean isReverse() {
+            return (collectorTalon.get() == -kCollectorSpeed);
         }
     }
 
@@ -282,6 +332,18 @@ public class Tray {
         void setReverse() {
             beltTalon.set(-kBeltSpeed);
         }
+        
+        boolean getOn() {
+            return (beltTalon.get()==kBeltSpeed);
+        }
+        
+        boolean getOff() {
+            return (beltTalon.get()==0);
+        }
+        
+        boolean getReverse() {
+            return (beltTalon.get()==-kBeltSpeed);
+        }
     }
 
     //Private class to represent flywheel
@@ -293,8 +355,10 @@ public class Tray {
         Encoder encoder;
         int numCyclesBelow;
         int discsShot;
+        double shooterVoltage = 8.4;
         boolean on = true;
         boolean driverOff = false;
+        boolean lowBattery = false;
         //DigitalInput speedSensor;
         //DigitalInput speedSensor2;
 
@@ -306,22 +370,21 @@ public class Tray {
         }
 
         void update() {
-            if(driverOff) {
+            if (driverOff) {
                 return;
             }
             System.out.println(encoder.getRate());
             //For now, use PWM based on battery voltage.
-            double pwm = -kShooterVoltage / DriverStation.getInstance().getBatteryVoltage();
-            DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, Double.toString(pwm));
+            double pwm = -shooterVoltage / DriverStation.getInstance().getBatteryVoltage();
+            
             if (pwm > 1.0) {
                 pwm = 1.0;
-                DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Low battery!");
+                lowBattery = true;
             } else if (pwm < -1.0) {
                 pwm = -1.0;
-                DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Low battery!");
+                lowBattery = true;
             }
 
-            DriverStationLCD.getInstance().updateLCD();
 
             //Verifying that we've been below for at least 5 cycles before we say we shot the disc
             if (/*speedSensor2.get()*/encoder.getRate() < kFlywheelLowSpeedThreshold) {
@@ -357,13 +420,29 @@ public class Tray {
             return true; /*speedSensor.get();*/
             //return encoder.getRate() > shooterSetSpeed;
         }
-        
+
         void setOn() {
             driverOff = false;
         }
-        
+
         void setOff() {
             driverOff = true;
+        }
+        
+        boolean lowBattery() {
+            return lowBattery;
+        }
+        
+        double getEncoderRate() {
+            return encoder.getRate();
+        }
+        
+        void setVoltage() {
+            shooterVoltage = 8.4;
+        }
+        
+        void setVoltage(double newVoltage) {
+            shooterVoltage = newVoltage;
         }
     }
 
@@ -387,6 +466,18 @@ public class Tray {
         void release() {
             sol.set(DoubleSolenoid.Value.kOff);
         }
+        
+        boolean isDown() {
+            return (sol.get() == DoubleSolenoid.Value.kReverse);
+        }
+        
+        boolean isUp() {
+            return (sol.get() == DoubleSolenoid.Value.kForward);
+        }
+        
+        boolean isReleased() {
+            return (sol.get() == DoubleSolenoid.Value.kOff);
+        }
     }
 
     //Private class to represent vertical "stopper" cylinder
@@ -404,6 +495,14 @@ public class Tray {
 
         void release() {
             sol.set(DoubleSolenoid.Value.kReverse);
+        }
+        
+        boolean isLocked() {
+            return (sol.get() == DoubleSolenoid.Value.kForward);
+        }
+        
+        boolean isReleased() {
+            return (sol.get() == DoubleSolenoid.Value.kReverse);
         }
     }
 
@@ -423,6 +522,14 @@ public class Tray {
         void pull() {
             sol.set(DoubleSolenoid.Value.kReverse);
 
+        }
+        
+        boolean isPushing() {
+            return (sol.get() == DoubleSolenoid.Value.kForward);
+        }
+        
+        boolean isPulling() {
+            return (sol.get() == DoubleSolenoid.Value.kReverse);
         }
     }
 }
