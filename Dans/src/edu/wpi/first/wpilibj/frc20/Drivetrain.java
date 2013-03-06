@@ -4,6 +4,7 @@
  */
 package edu.wpi.first.wpilibj.frc20;
 
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Gyro;
@@ -24,6 +25,9 @@ public class Drivetrain {
     Gyro gyro;
     double leftSpeed;
     double rightSpeed;
+    
+    Encoder leftEncoder;
+    Encoder rightEncoder;
 
     Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro) {
         this.frontLeft = frontLeft;
@@ -38,7 +42,7 @@ public class Drivetrain {
         backLeft.set(leftSpeed);
         frontRight.set(rightSpeed);
         backRight.set(rightSpeed);
-        System.out.println("Gyro: " + gyro.getAngle());
+        //System.out.println("Gyro: " + gyro.getAngle());
     }
 
     void arcadeDrive(double speed, double turn) {

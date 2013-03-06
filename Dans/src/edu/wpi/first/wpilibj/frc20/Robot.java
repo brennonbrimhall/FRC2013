@@ -9,6 +9,8 @@ package edu.wpi.first.wpilibj.frc20;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -122,21 +124,29 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
         cycleCounter += 1;
+        
+        System.out.println(cycleCounter);
+        
         if (cycleCounter < 100) {
-            
+            System.out.println("Waiting");
         } else
         if (cycleCounter < 400) {
             if(!lifter.isOnPyramid()) {
                 drivetrain.safeArcadeDrive(-.1, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+                System.out.println("Right:"+drivetrain.backRight.get());
+                System.out.println("Left:"+drivetrain.backLeft.get());
             } else {
                 drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+                System.out.println("Not Driving");
             }
         } else if (cycleCounter < 500) {
             drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
             tray.shoot();
+            System.out.println("Shooting");
         } else {
             drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
             tray.notShoot();
+            System.out.println("Not Shooting");
         }
         tray.update();
         statusPrinter.printStatuses();
@@ -162,6 +172,15 @@ public class Robot extends IterativeRobot {
             rightLight.set(Relay.Value.kForward);
         } else {
             rightLight.set(Relay.Value.kOff);
+        }
+        
+        if(DriverStation.getInstance().getDigitalIn(1)){
+            System.out.println("");
+            tray.setShooterVoltage(DriverStation.getInstance().getAnalogIn(1)*12/5);
+            System.out.println(""+DriverStation.getInstance().getAnalogIn(1)*12/5);
+            System.out.println(""+DriverStation.getInstance().getAnalogIn(1));
+        }else{
+            tray.setShooterVoltage();
         }
         
 
@@ -229,18 +248,22 @@ public class Robot extends IterativeRobot {
         }
         tray.update();
         statusPrinter.printStatuses();
-
+        
     }
 
     /**
      * This function is called periodically during test mode
      */
     public void testInit() {
+        tray.allOff();
         compressor.start();
+        tray.raise();
+        lifter.raise();
     }
     
     public void testPeriodic() {
         statusPrinter.printStatuses();
+        tray.update();
     }
     
     public void disabledInit(){

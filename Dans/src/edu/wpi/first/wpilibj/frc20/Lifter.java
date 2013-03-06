@@ -23,7 +23,7 @@ public class Lifter {
         this.lifterSolenoid = lifterSolenoid;
         this.leftLimit = leftLimit;
         this.rightLimit = rightLimit;
-        switchOverride = false;
+        enableSwitch();
     }
 
     void disableSwitch() {
@@ -42,23 +42,21 @@ public class Lifter {
         lifterSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
 
+    /*
     void release() {
         lifterSolenoid.set(DoubleSolenoid.Value.kOff);
     }
+    */
 
     boolean isOnPyramid() {
-        if (!switchOverride) {
-            return leftLimit.get() && rightLimit.get();
-        } else {
-            return true;
-        }
+        return leftOnPyramid() && rightOnPyramid();
     }
 
     boolean leftOnPyramid() {
         if (!switchOverride) {
             return leftLimit.get();
         } else {
-            return true;
+            return false;
         }
     }
 
@@ -66,7 +64,7 @@ public class Lifter {
         if (!switchOverride) {
             return rightLimit.get();
         } else {
-            return true;
+            return false;
         }
     }
 }

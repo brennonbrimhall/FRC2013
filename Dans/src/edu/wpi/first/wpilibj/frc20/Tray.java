@@ -32,6 +32,7 @@ public class Tray {
     boolean isLastDiscFired;
     int numCycles;
     int trayDirection;
+    double shooterVoltage = 8.4;
     //Variables to hold private classes
     Flywheel flywheel;
     Belt belt;
@@ -60,13 +61,14 @@ public class Tray {
         numCycles = 0;
         isTrayMoving = false;
         isShooting = false;
+        flywheel.setOn();
         latch.lock();
         belt.setOn();
         collector.setOn();
         trayDirection = kTrayUp;
         lower();
     }
-
+    
     void update() {
         flywheel.update();
         if (isTrayMoving) {
@@ -281,6 +283,14 @@ public class Tray {
     double flywheelEncoderRate() {
         return flywheel.getEncoderRate();
     }
+    
+    void setShooterVoltage(double newVoltage){
+        flywheel.setVoltage(newVoltage);
+    }
+    
+    void setShooterVoltage(){
+        flywheel.setVoltage();
+    }
 
     //Private class to represent Collector
     private class Collector {
@@ -355,7 +365,6 @@ public class Tray {
         Encoder encoder;
         int numCyclesBelow;
         int discsShot;
-        double shooterVoltage = 8.4;
         boolean on = true;
         boolean driverOff = false;
         boolean lowBattery = false;
@@ -371,6 +380,7 @@ public class Tray {
 
         void update() {
             if (driverOff) {
+                flywheelTalon.set(0);
                 return;
             }
             System.out.println(encoder.getRate());
