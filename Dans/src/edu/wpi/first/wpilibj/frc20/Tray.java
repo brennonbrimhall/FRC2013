@@ -22,6 +22,7 @@ public class Tray {
     final int kTrayDown = -1;
     final double kCollectorSpeed = -1.0;
     final double kBeltSpeed = -1.0;
+    final double kBeltShootSpeed = -.5;
     final double kShooterSetSpeed = 1000;
     public final int kIndexerCyclesAfterTrayMoved = 300;
     public final int kIndexerCyclesBeforeTrayMoved = 100;
@@ -63,10 +64,17 @@ public class Tray {
         isShooting = false;
         flywheel.setOn();
         latch.lock();
-        belt.setOn();
+        belt.setOff();
         collector.setOn();
         trayDirection = kTrayUp;
+        indexer.push();
         lower();
+    }
+    
+    void test() {
+        allOff();
+        latch.lock();
+        raise();
     }
     
     void update() {
@@ -199,7 +207,7 @@ public class Tray {
             isShooting = true;
         }
         if (flywheel.atSpeed()) {
-            belt.setOn();
+            belt.setShootOn();
             collector.setOn();
         } else {
             belt.setOff();
@@ -207,6 +215,7 @@ public class Tray {
         }
         if (flywheel.discsShot == 3) {
             notShoot();
+            belt.setOn();
         }
     }
 
@@ -333,6 +342,10 @@ public class Tray {
 
         void setOn() {
             beltTalon.set(kBeltSpeed);
+        }
+        
+        void setShootOn(){
+            beltTalon.set(kBeltShootSpeed);
         }
 
         void setOff() {

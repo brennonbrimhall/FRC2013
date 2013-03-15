@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.Talon;
  */
 public class Robot extends IterativeRobot {
     //Watchdog to send statuses to the Drivers
+
     StatusPrinter statusPrinter;
     // Controllers for the drivers to use
     XboxController driverStick;
@@ -52,28 +53,38 @@ public class Robot extends IterativeRobot {
     Talon fr;
     Talon br;
     Gyro gyro;
+    Encoder driveEncoder;
     // Lifter
     Lifter lifter;
     DoubleSolenoid lifterSolenoid;
     DigitalInput leftLimit;
     DigitalInput rightLimit;
-    
     Relay leftLight;
     Relay rightLight;
+    
+    boolean twoDiskAuto;
+    int autoState;
+    
+    final int AUTO_REVERSE = 1;
+    final int AUTO_TURN = 2;
+    final int AUTO_FIRE = 3;
+    final int AUTO_WAIT = 4;
+    
+    final double AUTO_REVERSE_DIST = 1796*.7;
+    final double AUTO_TURN_DIST = AUTO_REVERSE_DIST - 216*.2*.5;
 
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
      */
-    
     public void init() {
         tray.reset();
         lifter.raise();
         cycleCounter = 0;
         drivetrain.resetGyro();
-        
+        drivetrain.resetDistance();
     }
-    
+
     public void robotInit() {
         driverStick = new XboxController(1);
         operatorStick = new LogitechDualActionController(2);
@@ -87,8 +98,10 @@ public class Robot extends IterativeRobot {
         br = new Talon(4);
 
         gyro = new Gyro(1);
+        
+        driveEncoder = new Encoder(6,7);
 
-        drivetrain = new Drivetrain(fl, bl, fr, br, gyro);
+        drivetrain = new Drivetrain(fl, bl, fr, br, gyro, driveEncoder);
 
         shooterTalon = new Talon(5);
         beltTalon = new Talon(6);
@@ -109,47 +122,81 @@ public class Robot extends IterativeRobot {
         rightLimit = new DigitalInput(3);
 
         lifter = new Lifter(lifterSolenoid, leftLimit, rightLimit);
-        
+
         leftLight = new Relay(2);
         rightLight = new Relay(3);
 
     }
-    
+
     public void autonomousInit() {
         init();
+        cycleCounter = 0;
+        autoState = AUTO_REVERSE;
     }
 
     /**
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
-        cycleCounter += 1;
-        
-        System.out.println(cycleCounter);
-        
-        if (cycleCounter < 100) {
-            System.out.println("Waiting");
-        } else
-        if (cycleCounter < 400) {
-            if(!lifter.isOnPyramid()) {
-                drivetrain.safeArcadeDrive(-.1, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-                System.out.println("Right:"+drivetrain.backRight.get());
-                System.out.println("Left:"+drivetrain.backLeft.get());
+        if (DriverStation.getInstance().getDigitalIn(2)) {
+            twoDiskAuto = false;
+        } else {
+            twoDiskAuto = true;
+        }
+        if (twoDiskAuto) {
+            cycleCounter += 1;
+
+            //System.out.println(cycleCounter);
+
+            if (cycleCounter < 100) {
+                //System.out.println("Waiting");
+            } else if (cycleCounter < 400) {
+                if (!lifter.isOnPyramid()) {
+                    drivetrain.safeArcadeDrive(-.15, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+                    //System.out.println("Right:"+drivetrain.backRight.get());
+                    //System.out.println("Left:"+drivetrain.backLeft.get());
+                } else {
+                    drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+                    //System.out.println("Not Driving");
+                }
+            } else if (cycleCounter < 600) {
+                drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+                tray.shoot();
+                //System.out.println("Shooting");
             } else {
                 drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-                System.out.println("Not Driving");
+                tray.notShoot();
+                //System.out.println("Not Shooting");
             }
-        } else if (cycleCounter < 500) {
-            drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-            tray.shoot();
-            System.out.println("Shooting");
+            statusPrinter.printStatuses();
         } else {
-            drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-            tray.notShoot();
-            System.out.println("Not Shooting");
+            cycleCounter += 1;
+            System.out.println("DISTANCE:  " + drivetrain.getDistance());
+            if(autoState == AUTO_REVERSE) {
+                drivetrain.arcadeDrive(.5, 0);
+                if(drivetrain.getDistance() >= AUTO_REVERSE_DIST) {
+                    autoState = AUTO_TURN;
+                    System.out.println("State: Turn");
+                }
+            } else if(autoState == AUTO_TURN) {
+                drivetrain.arcadeDrive(0, -.4);
+                if(drivetrain.getDistance() <= AUTO_TURN_DIST) {
+                    autoState = AUTO_FIRE;
+                    System.out.println("State: Fire");
+                }
+            } else if(autoState == AUTO_FIRE) {
+                drivetrain.arcadeDrive(0, 0);
+                tray.shoot();
+                if(cycleCounter >= 650) {
+                    autoState = AUTO_WAIT;
+                    System.out.println("State: Wait");
+                }
+            } else if(autoState == AUTO_WAIT) {
+                drivetrain.arcadeDrive(0, 0);
+                tray.notShoot();
+            }
         }
         tray.update();
-        statusPrinter.printStatuses();
 
     }
 
@@ -161,32 +208,32 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-        
+
         // Turn the lights on and off
-        if(lifter.leftOnPyramid()) {
+        if (lifter.leftOnPyramid()) {
             leftLight.set(Relay.Value.kForward);
         } else {
             leftLight.set(Relay.Value.kOff);
         }
-        if(lifter.rightOnPyramid()) {
+        if (lifter.rightOnPyramid()) {
             rightLight.set(Relay.Value.kForward);
         } else {
             rightLight.set(Relay.Value.kOff);
         }
-        
-        if(DriverStation.getInstance().getDigitalIn(1)){
-            System.out.println("");
-            tray.setShooterVoltage(DriverStation.getInstance().getAnalogIn(1)*12/5);
-            System.out.println(""+DriverStation.getInstance().getAnalogIn(1)*12/5);
-            System.out.println(""+DriverStation.getInstance().getAnalogIn(1));
-        }else{
-            tray.setShooterVoltage();
-        }
-        
+
+        /*if(DriverStation.getInstance().getDigitalIn(1)){
+         System.out.println("");
+         tray.setShooterVoltage(DriverStation.getInstance().getAnalogIn(1)*12/5);
+         System.out.println(""+DriverStation.getInstance().getAnalogIn(1)*12/5);
+         System.out.println(""+DriverStation.getInstance().getAnalogIn(1));
+         }else{*/
+        tray.setShooterVoltage();
+        //}
+
 
         // Drive the robot
-        drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(),driverStick.getAnalogTriggers(),
-                    lifter.leftOnPyramid(),lifter.rightOnPyramid());
+        drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(), driverStick.getAnalogTriggers(),
+                lifter.leftOnPyramid(), lifter.rightOnPyramid());
 
         // Raise and slower the tray using A and B buttons
         if (operatorStick.getButton(6)) {
@@ -195,28 +242,28 @@ public class Robot extends IterativeRobot {
         if (operatorStick.getButton(8)) {
             tray.lower();
         }
-        if (operatorStick.getButton(4)){
+        if (operatorStick.getButton(4)) {
             tray.collectorOn();
         }
-        if (operatorStick.getButton(3) || operatorStick.getButton(1)){
+        if (operatorStick.getButton(3) || operatorStick.getButton(1)) {
             tray.collectorOff();
         }
-        if (operatorStick.getButton(2)){
+        if (operatorStick.getButton(2)) {
             tray.collectorReverse();
         }
-        if (operatorStick.dPadUp()){
+        if (operatorStick.dPadUp()) {
             tray.beltOn();
         }
-        if (operatorStick.dPadLeft() || operatorStick.dPadRight()){
+        if (operatorStick.dPadLeft() || operatorStick.dPadRight()) {
             tray.beltOff();
         }
-        if (operatorStick.dPadDown()){
+        if (operatorStick.dPadDown()) {
             tray.beltReverse();
         }
-        if(operatorStick.getButton(9)) {
+        if (operatorStick.getButton(9)) {
             tray.allOff();
         }
-        if(operatorStick.getButton(10)) {
+        if (operatorStick.getButton(10)) {
             tray.shooterOn();
         }
 
@@ -228,10 +275,10 @@ public class Robot extends IterativeRobot {
         if (driverStick.getB()) {
             lifter.raise();
         }
-        if(driverStick.getX()) {
+        if (driverStick.getX()) {
             lifter.disableSwitch();
         }
-        if(driverStick.getY()) {
+        if (driverStick.getY()) {
             lifter.enableSwitch();
         }
 
@@ -241,32 +288,32 @@ public class Robot extends IterativeRobot {
             //cycleCounter = 0;
         } else {
             tray.notShoot();/*
-            cycleCounter += 1;
-            if (cycleCounter == 50) {
-                tray.finishShooting();
-            }*/
+             cycleCounter += 1;
+             if (cycleCounter == 50) {
+             tray.finishShooting();
+             }*/
         }
         tray.update();
         statusPrinter.printStatuses();
-        
+
     }
 
     /**
      * This function is called periodically during test mode
      */
     public void testInit() {
-        tray.allOff();
+        drivetrain.arcadeDrive(0, 0);
         compressor.start();
-        tray.raise();
         lifter.raise();
+        tray.test();
     }
-    
+
     public void testPeriodic() {
         statusPrinter.printStatuses();
         tray.update();
     }
-    
-    public void disabledInit(){
+
+    public void disabledInit() {
         System.out.println("ROBOT DISABLED / Bobby, Phil: Done loading code.");
     }
 }

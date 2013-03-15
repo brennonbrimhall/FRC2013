@@ -36,6 +36,24 @@ public class Drivetrain {
         this.backRight = backRight;
         this.gyro = gyro;
     }
+    
+    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro, Encoder encoder) {
+        this.frontLeft = frontLeft;
+        this.backLeft = backLeft;
+        this.frontRight = frontRight;
+        this.backRight = backRight;
+        this.gyro = gyro;
+        this.rightEncoder = encoder;
+        this.rightEncoder.start();
+    }
+    
+    double getDistance() {
+        return rightEncoder.getDistance();
+    }
+    
+    void resetDistance() {
+        rightEncoder.reset();
+    }
 
     private void driveMotors() {
         frontLeft.set(leftSpeed);
@@ -54,11 +72,11 @@ public class Drivetrain {
     void safeArcadeDrive(double speed, double turn, boolean leftHit, boolean rightHit) {
         leftSpeed = -speed + turn;
         rightSpeed = speed + turn;
-        if (leftHit && leftSpeed < -kMaxPyramidSpeed) {
-            leftSpeed = -kMaxPyramidSpeed;
+        if (leftHit && leftSpeed > kMaxPyramidSpeed) {
+            leftSpeed = kMaxPyramidSpeed;
         }
-        if (rightHit && rightSpeed > kMaxPyramidSpeed) {
-            rightSpeed = kMaxPyramidSpeed;
+        if (rightHit && rightSpeed < -kMaxPyramidSpeed) {
+            rightSpeed = -kMaxPyramidSpeed;
         }
         driveMotors();
     }
