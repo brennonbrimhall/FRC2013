@@ -11,14 +11,14 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
  *
  * @author freshplum
  */
-public class Lifter {
+public class Lifters {
 
     DoubleSolenoid lifterSolenoid;
     DigitalInput leftLimit;
     DigitalInput rightLimit;
     boolean switchOverride;
 
-    Lifter(DoubleSolenoid lifterSolenoid,
+    Lifters(DoubleSolenoid lifterSolenoid,
             DigitalInput leftLimit, DigitalInput rightLimit) {
         this.lifterSolenoid = lifterSolenoid;
         this.leftLimit = leftLimit;
@@ -26,32 +26,32 @@ public class Lifter {
         enableSwitch();
     }
 
+    //Disables limit swtiches
     void disableSwitch() {
         switchOverride = true;
     }
 
+    //Re-enables limit switches
     void enableSwitch() {
         switchOverride = false;
     }
-
+    
+    //Raises the lifters
     void raise() {
         lifterSolenoid.set(DoubleSolenoid.Value.kForward);
     }
-
+    
+    //Lowers the lifters
     void lower() {
         lifterSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
 
-    /*
-    void release() {
-        lifterSolenoid.set(DoubleSolenoid.Value.kOff);
-    }
-    */
-
+    //Returns true if both of the limit swtiches are hit
     boolean isOnPyramid() {
         return leftOnPyramid() && rightOnPyramid();
     }
 
+    //Returns true if left limit swtich is hit
     boolean leftOnPyramid() {
         if (!switchOverride) {
             return leftLimit.get();
@@ -60,6 +60,7 @@ public class Lifter {
         }
     }
 
+    //REturns tru eif right limit swtich is hit
     boolean rightOnPyramid() {
         if (!switchOverride) {
             return rightLimit.get();

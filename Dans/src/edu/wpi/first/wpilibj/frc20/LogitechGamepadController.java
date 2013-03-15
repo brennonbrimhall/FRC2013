@@ -7,14 +7,15 @@ package edu.wpi.first.wpilibj.frc20;
 import edu.wpi.first.wpilibj.Joystick;
 
 /**
- *
+ * Describes a Logitech Gamepad Controller.  This type of controller is used
+ * for driver control, and it simplifies and abstracts the raw joystick.
  * @author freshplum
  */
-public class XboxController {
+public class LogitechGamepadController {
     
     Joystick stick;
     
-    XboxController(int pos) {
+    LogitechGamepadController(int pos) {
         stick = new Joystick(pos);
     }
     

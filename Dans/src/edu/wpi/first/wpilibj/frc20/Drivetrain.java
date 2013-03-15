@@ -14,18 +14,21 @@ import edu.wpi.first.wpilibj.Gyro;
  * @author freshplum
  */
 public class Drivetrain {
-
+    //Maximum PWM for "Safe" drive functions
     final double kMaxPyramidSpeed = .1;
-    //Deadband for speed function.  Talons have a 4% deadband threshold built in.
-    final double deadbandThreshold = 0.06; //6%
+    
+    //Global variables for speed values
+    double leftSpeed;
+    double rightSpeed;
+    
+    //Drive CIMs
     Talon frontLeft;
     Talon backLeft;
     Talon frontRight;
     Talon backRight;
-    Gyro gyro;
-    double leftSpeed;
-    double rightSpeed;
     
+    //Sensors
+    Gyro gyro;
     Encoder leftEncoder;
     Encoder rightEncoder;
 
@@ -47,20 +50,32 @@ public class Drivetrain {
         this.rightEncoder.start();
     }
     
-    double getDistance() {
+    double getRightDistance() {
         return rightEncoder.getDistance();
     }
     
-    void resetDistance() {
+    double getLeftDistance() {
+        return leftEncoder.getDistance();
+    }
+    
+    void resetRightDistance() {
         rightEncoder.reset();
     }
-
+    
+    void resetLeftDistance() {
+        leftEncoder.reset();
+    }
+    
+    void resetDistance(){
+        rightEncoder.reset();
+        leftEncoder.reset();
+    }
+        
     private void driveMotors() {
         frontLeft.set(leftSpeed);
         backLeft.set(leftSpeed);
         frontRight.set(rightSpeed);
         backRight.set(rightSpeed);
-        //System.out.println("Gyro: " + gyro.getAngle());
     }
 
     void arcadeDrive(double speed, double turn) {
@@ -101,20 +116,12 @@ public class Drivetrain {
     }
 
     double speedFunction(double x) {
-        //(x^3+x)/2*sign(x)
+        //In simple terms: |(x^3+x)|/2*sign(x)
+        
         //To increase curving, up the powers of either of the terms.  Start with
-        //x^3 to x^5, increasing by a power of two each time.  (Going by one isn't
-        //very obvious.  If more curving is needed by x^9, then maybe change x 
-        //to x^2 or more.  If you add a third or fourth term, increase the divisor 
-        //accordingly.
-
-        //int sign = 0; //Defaulting to no movement if not within deadband.
-
-        /*if (x > deadbandThreshold) {
-         sign = 1; //You're positive and out of deadband
-         } else if (x < -deadbandThreshold) {
-         sign = -1; //You;re negative and out of deadband
-         }*/
+        //x^3 to x^5, increasing by a power of two or one each time.
+        //If more curving is needed by x^9, then maybe change x to x^2 or more. 
+        //If you add a third or fourth term, increase the divisor accordingly.
 
         return heaviside(x) * Math.abs(((x * x * x * x * x) + (x)) / 2);
     }

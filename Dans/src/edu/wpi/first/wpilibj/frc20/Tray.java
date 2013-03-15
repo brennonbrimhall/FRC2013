@@ -18,15 +18,15 @@ public class Tray {
 
     //Constants
     final int kTrayUp = 1;
-    //final int kTrayNeutral = 0;
     final int kTrayDown = -1;
     final double kCollectorSpeed = -1.0;
     final double kBeltSpeed = -1.0;
     final double kBeltShootSpeed = -.5;
     final double kShooterSetSpeed = 1000;
-    public final int kIndexerCyclesAfterTrayMoved = 300;
-    public final int kIndexerCyclesBeforeTrayMoved = 100;
-    public final int kNumCyclesAfterShooting = 50;
+    final int kIndexerCyclesAfterTrayMoved = 300;
+    final int kIndexerCyclesBeforeTrayMoved = 100;
+    final int kNumCyclesAfterShooting = 50;
+    
     //Variables for Tray logic
     boolean isShooting;
     boolean isTrayMoving;
@@ -34,6 +34,7 @@ public class Tray {
     int numCycles;
     int trayDirection;
     double shooterVoltage = 8.4;
+    
     //Variables to hold private classes
     Flywheel flywheel;
     Belt belt;
@@ -71,12 +72,19 @@ public class Tray {
         lower();
     }
     
+    /**
+     * Sets tray up in test mode.  Turns everything off, locks the stopper/latch,
+     * and then raises the tray.
+     */
     void test() {
         allOff();
         latch.lock();
         raise();
     }
     
+    /**
+     * Sets the values of motors and actuators based on global values
+     */
     void update() {
         flywheel.update();
         if (isTrayMoving) {
@@ -94,17 +102,17 @@ public class Tray {
                     isTrayMoving = false;
                 } else if (trayDirection == kTrayDown) {
                     lifter.lower();
-
-                } /*else if (trayDirection == kTrayNeutral) {
-                 lifter.release();
-                 }*/
+                }
             } else {
                 indexer.pull();
                 isTrayMoving = false;
             }
         }
     }
-
+    
+    /**
+     * Raises the tray.
+     */
     void raise() {
         if (isShooting) {
             return;
@@ -117,6 +125,9 @@ public class Tray {
         }
     }
 
+    /**
+     * Lowers the tray.
+     */
     void lower() {
         if (isShooting) {
             return;
@@ -124,78 +135,83 @@ public class Tray {
         if (trayDirection == kTrayUp) {
             trayDirection = kTrayDown;
             isTrayMoving = true;
-            //lifter.lower();
             numCycles = 0;
-        } /*else if (trayDirection == kTrayNeutral) {
-         trayDirection = kTrayDown;
-         isTrayMoving = true;
-         lifter.lower();
-         }*/
+        }
     }
-    /*
-     void release() {
-     if (isShooting) {
-     return;
-     }
-     if (trayDirection == kTrayUp) {
-     trayDirection = kTrayNeutral;
-     isTrayMoving = true;
-     //lifter.release();
-     numCycles = 0;
-     } else if (trayDirection == kTrayDown) {
-     trayDirection = kTrayNeutral;
-     isTrayMoving = true;
-     lifter.release();
-     }
-     }
-     */
 
+    /**
+     * Turns the collector on.
+     */
     void collectorOn() {
         if (!isShooting) {
             collector.setOn();
         }
     }
-
+    
+    /**
+     * Turns the collector off.
+     */
     void collectorOff() {
         if (!isShooting) {
             collector.setOff();
         }
     }
-
+    
+    /**
+     * Turns collector in reverse to backdrive disks in case of jamming.
+     */
     void collectorReverse() {
         if (!isShooting) {
             collector.setReverse();
         }
     }
 
+    /**
+     * Turns belt on.
+     */
     void beltOn() {
         if (!isShooting) {
             belt.setOn();
         }
     }
-
+    
+    /**
+     * Turns belt off.
+     */
     void beltOff() {
         if (!isShooting) {
             belt.setOff();
         }
     }
-
+    
+    /**
+     * Turns belt in reverse to backdrive disks in case of jamming.
+     */
     void beltReverse() {
         if (!isShooting) {
             belt.setReverse();
         }
     }
-
+    
+    /**
+     * Turns everything on the tray off.
+     */
     void allOff() {
         belt.setOff();
         collector.setOff();
         flywheel.setOff();
     }
 
+    /**
+     * Turns the flywheel on.
+     */
     void shooterOn() {
         flywheel.setOn();
     }
 
+    /**
+     * Shoots the first three frisbees.
+     */
     void shoot() {
         if (isTrayMoving) {
             return;
@@ -219,6 +235,9 @@ public class Tray {
         }
     }
 
+    /**
+     * Fires last frisbee with the indexer.
+     */
     void notShoot() {
         if (isTrayMoving) {
             return;
@@ -243,6 +262,9 @@ public class Tray {
         flywheel.resetDiscsShot();
     }
 
+    /**
+     * Callback to clean up after shooting.
+     */
     private void finishShooting() {
         indexer.pull();
         latch.lock();
@@ -381,14 +403,10 @@ public class Tray {
         boolean on = true;
         boolean driverOff = false;
         boolean lowBattery = false;
-        //DigitalInput speedSensor;
-        //DigitalInput speedSensor2;
 
         Flywheel(Talon flywheelTalon, Encoder encoder) {
             this.flywheelTalon = flywheelTalon;
             this.encoder = encoder;
-            //speedSensor = new DigitalInput(6);
-            //speedSensor2 = new DigitalInput(7);
         }
 
         void update() {
@@ -440,7 +458,7 @@ public class Tray {
         }
 
         boolean atSpeed() {
-            return true; /*speedSensor.get();*/
+            return true;
             //return encoder.getRate() > shooterSetSpeed;
         }
 

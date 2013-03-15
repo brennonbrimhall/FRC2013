@@ -26,14 +26,17 @@ import edu.wpi.first.wpilibj.Talon;
  * directory.
  */
 public class Robot extends IterativeRobot {
-    //Watchdog to send statuses to the Drivers
-
+    
+    //Prints statuses to the driver station
     StatusPrinter statusPrinter;
+    
     // Controllers for the drivers to use
-    XboxController driverStick;
+    LogitechGamepadController driverStick;
     LogitechDualActionController operatorStick;
+    
     // Compressor!
     Compressor compressor;
+    
     // Shooter, Tray, and Collector
     Tray tray;
     Talon shooterTalon;
@@ -43,10 +46,8 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid latchSolenoid;
     DoubleSolenoid indexerSolenoid;
     Encoder shooterEncoder;
-    // We will reset the indexer and lock a certain number of cycles after the
-    // shooting ends, keep track of how long it has been here
-    int cycleCounter;
-    // The drivetrain
+    
+    //Drivetrain
     Drivetrain drivetrain;
     Talon fl;
     Talon bl;
@@ -54,24 +55,37 @@ public class Robot extends IterativeRobot {
     Talon br;
     Gyro gyro;
     Encoder driveEncoder;
-    // Lifter
-    Lifter lifter;
+    
+    //Lifter
+    Lifters lifters;
     DoubleSolenoid lifterSolenoid;
     DigitalInput leftLimit;
     DigitalInput rightLimit;
     Relay leftLight;
     Relay rightLight;
     
-    boolean twoDiskAuto;
-    int autoState;
+    //Autonomous Mode Constants and Variables
+    final int kNoAuto = 1;
+    final int kTwoDiskAuto = 2;
+    final int kThreeDiskAuto = 3;
+    final int kFourDiskAuto = 4;
+    int autoMode;
     
-    final int AUTO_REVERSE = 1;
-    final int AUTO_TURN = 2;
-    final int AUTO_FIRE = 3;
-    final int AUTO_WAIT = 4;
+    //Three Disk Auto Constants and Variables
+    final int kThreeDiskAutoReverse = 1;
+    final int kThreeDiskAutoTurn = 2;
+    final int kThreeDiskAutoFire = 3;
+    final int kThreeDiskAutoWait = 4;
+    final double kThreeDiskAutoReverseDistance = 1796 * .7;
+    final double kThreeDiskAutoTurnDistance = kThreeDiskAutoReverseDistance - 216 * .2 * .5;
+    int threeDiskAutoState;
     
-    final double AUTO_REVERSE_DIST = 1796*.7;
-    final double AUTO_TURN_DIST = AUTO_REVERSE_DIST - 216*.2*.5;
+    //Cycle Counter --
+    //We will reset the indexer and lock a certain number of cycles after the
+    //shooting ends, keep track of how long it has been here.  This global var
+    //could exceed its max threshold if the robot has been operational for a 
+    //year or so (yes, we did the math).
+    int cycleCounter;
 
     /**
      * This function is run when the robot is first started up and should be
@@ -79,14 +93,14 @@ public class Robot extends IterativeRobot {
      */
     public void init() {
         tray.reset();
-        lifter.raise();
+        lifters.raise();
         cycleCounter = 0;
         drivetrain.resetGyro();
-        drivetrain.resetDistance();
+        drivetrain.resetRightDistance();
     }
 
     public void robotInit() {
-        driverStick = new XboxController(1);
+        driverStick = new LogitechGamepadController(1);
         operatorStick = new LogitechDualActionController(2);
 
         compressor = new Compressor(1, 1);
@@ -98,8 +112,8 @@ public class Robot extends IterativeRobot {
         br = new Talon(4);
 
         gyro = new Gyro(1);
-        
-        driveEncoder = new Encoder(6,7);
+
+        driveEncoder = new Encoder(6, 7);
 
         drivetrain = new Drivetrain(fl, bl, fr, br, gyro, driveEncoder);
 
@@ -121,7 +135,7 @@ public class Robot extends IterativeRobot {
         leftLimit = new DigitalInput(2);
         rightLimit = new DigitalInput(3);
 
-        lifter = new Lifter(lifterSolenoid, leftLimit, rightLimit);
+        lifters = new Lifters(lifterSolenoid, leftLimit, rightLimit);
 
         leftLight = new Relay(2);
         rightLight = new Relay(3);
@@ -129,77 +143,175 @@ public class Robot extends IterativeRobot {
     }
 
     public void autonomousInit() {
+        //Lowering tray; setting up for all auto modes
         init();
+
+        //Setting cycle counter; will use in various auto modes
         cycleCounter = 0;
-        autoState = AUTO_REVERSE;
+
+        //Deciding autonomous mode
+        decideAutonomous();
     }
 
     /**
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
-        if (DriverStation.getInstance().getDigitalIn(2)) {
-            twoDiskAuto = false;
-        } else {
-            twoDiskAuto = true;
-        }
-        if (twoDiskAuto) {
-            cycleCounter += 1;
+        //Incrementing cycles
+        cycleCounter++;
 
-            //System.out.println(cycleCounter);
-
-            if (cycleCounter < 100) {
-                //System.out.println("Waiting");
-            } else if (cycleCounter < 400) {
-                if (!lifter.isOnPyramid()) {
-                    drivetrain.safeArcadeDrive(-.15, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-                    //System.out.println("Right:"+drivetrain.backRight.get());
-                    //System.out.println("Left:"+drivetrain.backLeft.get());
-                } else {
-                    drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-                    //System.out.println("Not Driving");
-                }
-            } else if (cycleCounter < 600) {
-                drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-                tray.shoot();
-                //System.out.println("Shooting");
-            } else {
-                drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
-                tray.notShoot();
-                //System.out.println("Not Shooting");
-            }
-            statusPrinter.printStatuses();
-        } else {
-            cycleCounter += 1;
-            System.out.println("DISTANCE:  " + drivetrain.getDistance());
-            if(autoState == AUTO_REVERSE) {
-                drivetrain.arcadeDrive(.5, 0);
-                if(drivetrain.getDistance() >= AUTO_REVERSE_DIST) {
-                    autoState = AUTO_TURN;
-                    System.out.println("State: Turn");
-                }
-            } else if(autoState == AUTO_TURN) {
-                drivetrain.arcadeDrive(0, -.4);
-                if(drivetrain.getDistance() <= AUTO_TURN_DIST) {
-                    autoState = AUTO_FIRE;
-                    System.out.println("State: Fire");
-                }
-            } else if(autoState == AUTO_FIRE) {
-                drivetrain.arcadeDrive(0, 0);
-                tray.shoot();
-                if(cycleCounter >= 650) {
-                    autoState = AUTO_WAIT;
-                    System.out.println("State: Wait");
-                }
-            } else if(autoState == AUTO_WAIT) {
-                drivetrain.arcadeDrive(0, 0);
-                tray.notShoot();
-            }
+        //Deciding autonomous function call based on autoMode using a switch or
+        //break setup to improve speed.
+        switch (autoMode) {
+            case kTwoDiskAuto:
+                twoDiskAutonomousPeriodic();
+                break;
+            case kThreeDiskAuto:
+                threeDiskAutonomousPeriodic();
+                break;
+            case kFourDiskAuto:
+                fourDiskAutonomousPeriodic();
+                break;
+            case kNoAuto:
+                break;
         }
+
+        //Updating tray
         tray.update();
-
     }
 
+    private void decideAutonomous() {
+        //Setting two disk auto if DIO 2 is on
+        if (DriverStation.getInstance().getDigitalIn(2)) {
+            autoMode = kTwoDiskAuto;
+            //Setting three disk auto if DIO 3 is on
+        } else if (DriverStation.getInstance().getDigitalIn(3)) {
+            autoMode = kThreeDiskAuto;
+            //Setting four disk auto if DIO 4 is on
+        } else if (DriverStation.getInstance().getDigitalIn(4)) {
+            autoMode = kFourDiskAuto;
+            //Defaulting to no autonomous if no DIO is on
+        } else {
+            autoMode = kNoAuto;
+        }
+    }
+
+    private void twoDiskAutonomousPeriodic() {
+        if (cycleCounter < 100) {
+            //Waiting for tray to come down, etc.
+        } else if (cycleCounter < 400) {
+            //Backing up to pyramid
+            if (!lifters.isOnPyramid()) {
+                drivetrain.safeArcadeDrive(-.15, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            } else {
+                drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            }
+        } else if (cycleCounter < 600) {
+            //Shooting first disk
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.shoot();
+        } else {
+            //Shooting second disk
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.notShoot();
+        }
+        statusPrinter.printStatuses();
+    }
+
+    private void threeDiskAutonomousPeriodic() {
+        if (threeDiskAutoState == kThreeDiskAutoReverse) {
+            drivetrain.arcadeDrive(.5, 0);
+            if (drivetrain.getRightDistance() >= kThreeDiskAutoReverseDistance) {
+                threeDiskAutoState = kThreeDiskAutoTurn;
+            }
+        } else if (threeDiskAutoState == kThreeDiskAutoTurn) {
+            drivetrain.arcadeDrive(0, -.4);
+            if (drivetrain.getRightDistance() <= kThreeDiskAutoTurnDistance) {
+                threeDiskAutoState = kThreeDiskAutoFire;
+            }
+        } else if (threeDiskAutoState == kThreeDiskAutoFire) {
+            drivetrain.arcadeDrive(0, 0);
+            tray.shoot();
+            if (cycleCounter >= 650) {
+                threeDiskAutoState = kThreeDiskAutoWait;
+            }
+        } else if (threeDiskAutoState == kThreeDiskAutoWait) {
+            drivetrain.arcadeDrive(0, 0);
+            tray.notShoot();
+        }
+    }
+
+    private void fourDiskAutonomousPeriodic() {
+        //Lower tray
+        if (cycleCounter < 25) {
+            //Waiting for tray to lower
+        //Moving backwards
+        } else if (cycleCounter < 75) {
+            if (!lifters.isOnPyramid()) {
+                drivetrain.safeArcadeDrive(-.15, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            } else {
+                drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            }
+        //Shooting first preloaded disk
+        } else if (cycleCounter < 150) {
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.shoot();
+        //Shooting second preloaded disk
+        }else if (cycleCounter < 200) {
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.notShoot();
+            //Resetting encoders and gyro for next legs of auto
+            drivetrain.resetGyro();
+            drivetrain.resetDistance();
+        //Driving forwards
+        }else if (cycleCounter < 250) {
+            if(drivetrain.getLeftDistance()<100 && drivetrain.getRightDistance()<100){
+                drivetrain.safeArcadeDrive(.5, 0, false, false);
+            }
+        //Turning 90 degrees counterclockwise
+        }else if (cycleCounter < 300) {
+            if(!(drivetrain.gyro.getAngle() > 95) && !(drivetrain.gyro.getAngle() < 85)) {
+                //do nothing, in correct orientation
+            }else{
+                drivetrain.safeArcadeDrive(.5, 1, false, false);
+            }
+        //Backing up and collecting
+        }else if (cycleCounter < 500) {
+            tray.collectorOn();
+            tray.beltOn();
+            if(drivetrain.getLeftDistance()<50 && drivetrain.getRightDistance()<50){
+                drivetrain.arcadeDrive(.5, 0);
+            }
+        //Turning back straight
+        }else if (cycleCounter < 550) {
+            if(!(drivetrain.gyro.getAngle() > 5) && !(drivetrain.gyro.getAngle() < -5)) {
+                //do nothing, in correct orientation
+            }else{
+                drivetrain.safeArcadeDrive(.5, 1, false, false);
+            }
+        //Driving backwards
+        }else if (cycleCounter < 600) {
+            if(!lifters.isOnPyramid()){
+                drivetrain.safeArcadeDrive(-.5, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            }
+        //Shooting first picked up disk
+        } else if (cycleCounter < 650) {
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.shoot();
+        //Shooting second picked up disk
+        }else if (cycleCounter < 725) {
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.notShoot();
+        }
+        
+    }
+
+    //Shoot 2
+    //Make turn
+    //Backup and collect Disks
+    //90 degree turn
+    //Backup to Pyramid
+    //Fire
     public void teleopInit() {
         init();
     }
@@ -208,33 +320,30 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-
         // Turn the lights on and off
-        if (lifter.leftOnPyramid()) {
-            leftLight.set(Relay.Value.kForward);
-        } else {
-            leftLight.set(Relay.Value.kOff);
-        }
-        if (lifter.rightOnPyramid()) {
-            rightLight.set(Relay.Value.kForward);
-        } else {
-            rightLight.set(Relay.Value.kOff);
-        }
-
-        /*if(DriverStation.getInstance().getDigitalIn(1)){
-         System.out.println("");
-         tray.setShooterVoltage(DriverStation.getInstance().getAnalogIn(1)*12/5);
-         System.out.println(""+DriverStation.getInstance().getAnalogIn(1)*12/5);
-         System.out.println(""+DriverStation.getInstance().getAnalogIn(1));
-         }else{*/
+        lights();
+        
         tray.setShooterVoltage();
-        //}
+        driveOI();
+        trayRaiseOI();
+        collectorOI();
+        beltOI();
+        liftersOI();
+        
+        allOffOI();
+        shooterOnOI();
+        limitSwitchesOI();
+        shootOI();
+        
+        //Updating tray
+        tray.update();
+        
+        //Updating statuses
+        statusPrinter.printStatuses();
 
-
-        // Drive the robot
-        drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(), driverStick.getAnalogTriggers(),
-                lifter.leftOnPyramid(), lifter.rightOnPyramid());
-
+    }
+    
+    private void trayRaiseOI(){
         // Raise and slower the tray using A and B buttons
         if (operatorStick.getButton(6)) {
             tray.raise();
@@ -242,6 +351,10 @@ public class Robot extends IterativeRobot {
         if (operatorStick.getButton(8)) {
             tray.lower();
         }
+    }
+    
+    private void collectorOI(){
+        //Collector on, off, and reverse
         if (operatorStick.getButton(4)) {
             tray.collectorOn();
         }
@@ -251,6 +364,10 @@ public class Robot extends IterativeRobot {
         if (operatorStick.getButton(2)) {
             tray.collectorReverse();
         }
+    }
+    
+    private void beltOI(){
+        //Belt on, off, and reverse
         if (operatorStick.dPadUp()) {
             tray.beltOn();
         }
@@ -260,60 +377,106 @@ public class Robot extends IterativeRobot {
         if (operatorStick.dPadDown()) {
             tray.beltReverse();
         }
+    }
+    
+    private void liftersOI(){
+        //Raise and lower the lifters with left bumper and limit switches
+        //with right bumper override.
+        if (driverStick.getLeftBumper() && (driverStick.getRightBumper() || (lifters.isOnPyramid()))) {
+            lifters.lower();
+        }
+        if (driverStick.getB()) {
+            lifters.raise();
+        }
+    }
+    
+    private void driveOI(){
+        //Drive the robot
+        drivetrain.safeCheesyDrive(driverStick.getLeftY(), 
+                driverStick.getRighttX(), driverStick.getAnalogTriggers(),
+                lifters.leftOnPyramid(), lifters.rightOnPyramid());
+    }
+    
+    private void shootOI(){
+        //Shoot!
+        if (operatorStick.getButton(5) && (operatorStick.getButton(7) || (lifters.isOnPyramid()))) {
+            tray.shoot();
+        } else {
+            tray.notShoot();
+        }
+    }
+    
+    private void limitSwitchesOI(){
+        //Disabling limit switches
+        if (driverStick.getX()) {
+            lifters.disableSwitch();
+        }
+        
+        //Enabling limit switches 
+        if (driverStick.getY()) {
+            lifters.enableSwitch();
+        }
+    }
+    
+    private void allOffOI(){
+        //All off button - turns all tray functions off
         if (operatorStick.getButton(9)) {
             tray.allOff();
         }
+    }
+    
+    private void shooterOnOI(){
+        //Turns shooter on
         if (operatorStick.getButton(10)) {
             tray.shooterOn();
         }
-
-        // Raise and lower the lifters using the left bumper and either
-        // the limit switches or the right bumper
-        if (driverStick.getLeftBumper() && (driverStick.getRightBumper() || (lifter.isOnPyramid()))) {
-            lifter.lower();
-        }
-        if (driverStick.getB()) {
-            lifter.raise();
-        }
-        if (driverStick.getX()) {
-            lifter.disableSwitch();
-        }
-        if (driverStick.getY()) {
-            lifter.enableSwitch();
-        }
-
-        // Shoot!
-        if (operatorStick.getButton(5) && (operatorStick.getButton(7) || (lifter.isOnPyramid()))) {
-            tray.shoot();
-            //cycleCounter = 0;
-        } else {
-            tray.notShoot();/*
-             cycleCounter += 1;
-             if (cycleCounter == 50) {
-             tray.finishShooting();
-             }*/
-        }
-        tray.update();
-        statusPrinter.printStatuses();
-
     }
 
     /**
      * This function is called periodically during test mode
      */
     public void testInit() {
+        //Turning off drivetrain
         drivetrain.arcadeDrive(0, 0);
+        
+        //Starting compressor
         compressor.start();
-        lifter.raise();
+        
+        //Raising lifters
+        lifters.raise();
+        
+        //Turning tray off/into test mode
         tray.test();
     }
 
     public void testPeriodic() {
+        //Turning lights on and off
+        lights();
+        
+        //Limited driver OI
+        trayRaiseOI();
+        collectorOI();
+        beltOI();
+        liftersOI();
+        allOffOI();
+        
+        //Printing statuses
         statusPrinter.printStatuses();
+        
+        //Updating tray
         tray.update();
     }
-
-    public void disabledInit() {
-        System.out.println("ROBOT DISABLED / Bobby, Phil: Done loading code.");
+    
+    private void lights(){
+        if (lifters.leftOnPyramid()) {
+            leftLight.set(Relay.Value.kForward);
+        } else {
+            leftLight.set(Relay.Value.kOff);
+        }
+        if (lifters.rightOnPyramid()) {
+            rightLight.set(Relay.Value.kForward);
+        } else {
+            rightLight.set(Relay.Value.kOff);
+        }
     }
 }
