@@ -253,18 +253,18 @@ public class Robot extends IterativeRobot {
                 drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             }
         //Shooting first preloaded disk
-        } else if (cycleCounter < 150) {
+        } else if (cycleCounter < 200) {
             drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             tray.shoot();
         //Shooting second preloaded disk
-        }else if (cycleCounter < 200) {
+        }else if (cycleCounter < 400) {
             drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             tray.notShoot();
             //Resetting encoders and gyro for next legs of auto
             drivetrain.resetGyro();
             drivetrain.resetDistance();
         //Driving forwards
-        }else if (cycleCounter < 250) {
+        }/*else if (cycleCounter < 250) {
             if(drivetrain.getLeftDistance()<100 && drivetrain.getRightDistance()<100){
                 drivetrain.safeArcadeDrive(.5, 0, false, false);
             }
@@ -302,7 +302,7 @@ public class Robot extends IterativeRobot {
         }else if (cycleCounter < 725) {
             drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             tray.notShoot();
-        }
+        }*/
         
     }
 
