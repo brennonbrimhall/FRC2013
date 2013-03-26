@@ -23,7 +23,7 @@ public class Tray {
     final double kBeltSpeed = -1.0;
     final double kBeltShootSpeed = -.5;
     final double kShooterSetSpeed = 1000;
-    final int kIndexerCyclesAfterTrayMoved = 300;
+    final int kIndexerCyclesAfterTrayMoved = 125;
     final int kIndexerCyclesBeforeTrayMoved = 100;
     final int kNumCyclesAfterShooting = 50;
     
@@ -315,6 +315,10 @@ public class Tray {
         return flywheel.getEncoderRate();
     }
     
+    double flywheelEncoderDistance() {
+        return flywheel.getEncoderDistance();
+    }
+    
     void setShooterVoltage(double newVoltage){
         flywheel.setVoltage(newVoltage);
     }
@@ -414,7 +418,7 @@ public class Tray {
                 flywheelTalon.set(0);
                 return;
             }
-            System.out.println(encoder.getRate());
+            //System.out.println(encoder.getRate());
             //For now, use PWM based on battery voltage.
             double pwm = -shooterVoltage / DriverStation.getInstance().getBatteryVoltage();
             
@@ -476,6 +480,10 @@ public class Tray {
         
         double getEncoderRate() {
             return encoder.getRate();
+        }
+        
+        double getEncoderDistance() {
+            return encoder.getDistance();
         }
         
         void setVoltage() {
