@@ -17,5 +17,10 @@
 /ETest/build/
 /testBot/build/
 /2013/Robot/nbproject/*
+<<<<<<< HEAD
 /Dans/build/
+>>>>>>> origin/master
+=======
+/Dans/build/
+/OperatorJoystickTest/build/
 >>>>>>> origin/master

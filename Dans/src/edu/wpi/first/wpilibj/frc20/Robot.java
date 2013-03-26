@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
@@ -23,10 +24,11 @@ import edu.wpi.first.wpilibj.Talon;
  * directory.
  */
 public class Robot extends IterativeRobot {
-
+    //Watchdog to send statuses to the Drivers
+    StatusPrinter statusPrinter;
     // Controllers for the drivers to use
     XboxController driverStick;
-    XboxController operatorStick;
+    LogitechDualActionController operatorStick;
     // Compressor!
     Compressor compressor;
     // Shooter, Tray, and Collector
@@ -47,6 +49,7 @@ public class Robot extends IterativeRobot {
     Talon bl;
     Talon fr;
     Talon br;
+    Gyro gyro;
     // Lifter
     Lifter lifter;
     DoubleSolenoid lifterSolenoid;
@@ -55,26 +58,25 @@ public class Robot extends IterativeRobot {
     
     Relay leftLight;
     Relay rightLight;
-
+    //frame led lights
+    Relay bottomLeft;
+    Relay bottomRight;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
      */
     
     public void init() {
-        tray.lower();
-        //tray.notShoot();
-        //tray.finishShooting();
-        tray.beltOn();
-        tray.collectorOn();
+        tray.reset();
         lifter.raise();
         cycleCounter = 0;
+        drivetrain.resetGyro();
         
     }
     
     public void robotInit() {
         driverStick = new XboxController(1);
-        operatorStick = new XboxController(2);
+        operatorStick = new LogitechDualActionController(2);
 
         compressor = new Compressor(1, 1);
         compressor.start();
@@ -84,8 +86,9 @@ public class Robot extends IterativeRobot {
         fr = new Talon(3);
         br = new Talon(4);
 
+        gyro = new Gyro(1);
 
-        drivetrain = new Drivetrain(fl, bl, fr, br);
+        drivetrain = new Drivetrain(fl, bl, fr, br, gyro);
 
         shooterTalon = new Talon(5);
         beltTalon = new Talon(6);
@@ -94,8 +97,10 @@ public class Robot extends IterativeRobot {
         latchSolenoid = new DoubleSolenoid(3, 4);
         indexerSolenoid = new DoubleSolenoid(5, 6);
         shooterEncoder = new Encoder(4, 5);
+        shooterEncoder.start();
 
         tray = new Tray(shooterTalon, beltTalon, collectorTalon, traySolenoid, latchSolenoid, indexerSolenoid, shooterEncoder);
+        statusPrinter = new StatusPrinter(tray);
 
         cycleCounter = 0;
 
@@ -107,7 +112,9 @@ public class Robot extends IterativeRobot {
         
         leftLight = new Relay(2);
         rightLight = new Relay(3);
-
+        //bottom frame led lights
+        bottomLeft = new Relay(0);
+        bottomRight = new Relay(0);
     }
     
     public void autonomousInit() {
@@ -119,12 +126,24 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
         cycleCounter += 1;
-        if (cycleCounter < 300) {
+        if (cycleCounter < 100) {
+            
+        } else
+        if (cycleCounter < 400) {
+            if(!lifter.isOnPyramid()) {
+                drivetrain.safeArcadeDrive(-.1, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+            } else {
+                drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
+            }
+        } else if (cycleCounter < 500) {
+            drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
             tray.shoot();
         } else {
+            drivetrain.safeArcadeDrive(0, 0, lifter.leftOnPyramid(), lifter.rightOnPyramid());
             tray.notShoot();
-        } 
+        }
         tray.update();
+        statusPrinter.printStatuses();
 
     }
 
@@ -136,7 +155,9 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-        
+        //led frame lights on
+        bottomLeft.set(Relay.Value.kForward);
+        bottomRight.set(Relay.Value.kForward);
         // Turn the lights on and off
         if(lifter.leftOnPyramid()) {
             leftLight.set(Relay.Value.kForward);
@@ -148,17 +169,42 @@ public class Robot extends IterativeRobot {
         } else {
             rightLight.set(Relay.Value.kOff);
         }
+        
 
-        // Drive the robzot
-        drivetrain.safeArcadeDrive(driverStick.getLeftY(), driverStick.getRighttX(),
+        // Drive the robot
+        drivetrain.safeCheesyDrive(driverStick.getLeftY(), driverStick.getRighttX(),driverStick.getAnalogTriggers(),
                     lifter.leftOnPyramid(),lifter.rightOnPyramid());
 
         // Raise and slower the tray using A and B buttons
-        if (operatorStick.getA()) {
+        if (operatorStick.getButton(6)) {
             tray.raise();
         }
-        if (operatorStick.getB()) {
+        if (operatorStick.getButton(8)) {
             tray.lower();
+        }
+        if (operatorStick.getButton(4)){
+            tray.collectorOn();
+        }
+        if (operatorStick.getButton(3) || operatorStick.getButton(1)){
+            tray.collectorOff();
+        }
+        if (operatorStick.getButton(2)){
+            tray.collectorReverse();
+        }
+        if (operatorStick.dPadUp()){
+            tray.beltOn();
+        }
+        if (operatorStick.dPadLeft() || operatorStick.dPadRight()){
+            tray.beltOff();
+        }
+        if (operatorStick.dPadDown()){
+            tray.beltReverse();
+        }
+        if(operatorStick.getButton(9)) {
+            tray.allOff();
+        }
+        if(operatorStick.getButton(10)) {
+            tray.shooterOn();
         }
 
         // Raise and lower the lifters using the left bumper and either
@@ -166,29 +212,20 @@ public class Robot extends IterativeRobot {
         if (driverStick.getLeftBumper() && (driverStick.getRightBumper() || (lifter.isOnPyramid()))) {
             lifter.lower();
         }
-        if (driverStick.getBack()) {
+        if (driverStick.getB()) {
             lifter.raise();
         }
-        if (driverStick.getStart()) {
-            lifter.release();
+        if(driverStick.getX()) {
+            lifter.disableSwitch();
         }
-
-        // Request to turn on and off the collector.
-        // If we are shooting the requests will be ignored
-        if (driverStick.getA()) {
-            tray.collectorOn();
-        }
-        if (driverStick.getB()) {
-            tray.collectorOff();
-        }
-        if (driverStick.getX()) {
-            tray.collectorReverse();
+        if(driverStick.getY()) {
+            lifter.enableSwitch();
         }
 
         // Shoot!
-        if (operatorStick.getLeftBumper() && (operatorStick.getRightBumper() || (lifter.isOnPyramid()))) {
+        if (operatorStick.getButton(5) && (operatorStick.getButton(7) || (lifter.isOnPyramid()))) {
             tray.shoot();
-            cycleCounter = 0;
+            //cycleCounter = 0;
         } else {
             tray.notShoot();/*
             cycleCounter += 1;
@@ -197,12 +234,22 @@ public class Robot extends IterativeRobot {
             }*/
         }
         tray.update();
+        statusPrinter.printStatuses();
 
     }
 
     /**
      * This function is called periodically during test mode
      */
+    public void testInit() {
+        compressor.start();
+    }
+    
     public void testPeriodic() {
+        statusPrinter.printStatuses();
+    }
+    
+    public void disabledInit(){
+        System.out.println("ROBOT DISABLED / Bobby, Phil: Done loading code.");
     }
 }
