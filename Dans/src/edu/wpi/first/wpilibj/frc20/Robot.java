@@ -197,16 +197,16 @@ public class Robot extends IterativeRobot {
     }
 
     private void twoDiskAutonomousPeriodic() {
-        if (cycleCounter < 100) {
+        if (cycleCounter < 25) {
             //Waiting for tray to come down, etc.
-        } else if (cycleCounter < 400) {
+        } else if (cycleCounter < 75) {
             //Backing up to pyramid
             if (!lifters.isOnPyramid()) {
                 drivetrain.safeArcadeDrive(-.15, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             } else {
                 drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             }
-        } else if (cycleCounter < 600) {
+        } else if (cycleCounter < 200) {
             //Shooting first disk
             drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             tray.shoot();
@@ -242,67 +242,34 @@ public class Robot extends IterativeRobot {
     }
 
     private void fourDiskAutonomousPeriodic() {
+        //System.out.println(drivetrain.getRightDistance());
         //Lower tray
         if (cycleCounter < 25) {
-            //Waiting for tray to lower
-        //Moving backwards
-        } else if (cycleCounter < 75) {
-            if (!lifters.isOnPyramid()) {
-                drivetrain.safeArcadeDrive(-.15, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
-            } else {
-                drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
-            }
-        //Shooting first preloaded disk
-        } else if (cycleCounter < 200) {
-            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
-            tray.shoot();
-        //Shooting second preloaded disk
-        }else if (cycleCounter < 400) {
-            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
-            tray.notShoot();
-            //Resetting encoders and gyro for next legs of auto
-            drivetrain.resetGyro();
-            drivetrain.resetDistance();
-        //Driving forwards
-        }/*else if (cycleCounter < 250) {
-            if(drivetrain.getLeftDistance()<100 && drivetrain.getRightDistance()<100){
-                drivetrain.safeArcadeDrive(.5, 0, false, false);
-            }
-        //Turning 90 degrees counterclockwise
-        }else if (cycleCounter < 300) {
-            if(!(drivetrain.gyro.getAngle() > 95) && !(drivetrain.gyro.getAngle() < 85)) {
-                //do nothing, in correct orientation
-            }else{
-                drivetrain.safeArcadeDrive(.5, 1, false, false);
-            }
-        //Backing up and collecting
-        }else if (cycleCounter < 500) {
-            tray.collectorOn();
+            //Waiting for tray to lower and turning on collection
             tray.beltOn();
-            if(drivetrain.getLeftDistance()<50 && drivetrain.getRightDistance()<50){
-                drivetrain.arcadeDrive(.5, 0);
-            }
-        //Turning back straight
-        }else if (cycleCounter < 550) {
-            if(!(drivetrain.gyro.getAngle() > 5) && !(drivetrain.gyro.getAngle() < -5)) {
-                //do nothing, in correct orientation
-            }else{
-                drivetrain.safeArcadeDrive(.5, 1, false, false);
-            }
-        //Driving backwards
-        }else if (cycleCounter < 600) {
-            if(!lifters.isOnPyramid()){
-                drivetrain.safeArcadeDrive(-.5, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
-            }
-        //Shooting first picked up disk
-        } else if (cycleCounter < 650) {
-            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.collectorOn();
+        //Moving forwards
+        } else if (cycleCounter < 30) {
+            drivetrain.arcadeDrive(-.6, 0);
+        } else if (cycleCounter < 220) {
+            drivetrain.arcadeDrive(-.15, 0);
+            drivetrain.gyro.reset();
+            drivetrain.resetRightDistance();
+        //Turning
+        } else if (cycleCounter < 285) {
+            tray.beltOff();
+            tray.collectorOff();
+            drivetrain.pivot(.5);
+        } else if (cycleCounter < 370){
+            //drivetrain.arcadeDrive(0, 0);
+            drivetrain.safeArcadeDrive(-.35, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+        } else if (cycleCounter < 400){
+            drivetrain.safeArcadeDrive(-.2, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+        } else if (cycleCounter < 600) {
             tray.shoot();
-        //Shooting second picked up disk
-        }else if (cycleCounter < 725) {
-            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+        } else if (cycleCounter < 700) {
             tray.notShoot();
-        }*/
+        }
         
     }
 
