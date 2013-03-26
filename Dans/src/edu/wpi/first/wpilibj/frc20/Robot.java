@@ -259,7 +259,7 @@ public class Robot extends IterativeRobot {
         } else if (cycleCounter < 285) {
             tray.beltOff();
             tray.collectorOff();
-            drivetrain.pivot(.5);
+            drivetrain.pivot(Voltage.voltageToPWM(6.1));
         } else if (cycleCounter < 370){
             //drivetrain.arcadeDrive(0, 0);
             drivetrain.safeArcadeDrive(-.35, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
