@@ -256,7 +256,7 @@ public class Robot extends IterativeRobot {
             drivetrain.gyro.reset();
             drivetrain.resetRightDistance();
         //Turning
-        } else if (cycleCounter < 285) {
+        } else if (cycleCounter < (285)) {
             tray.beltOff();
             tray.collectorOff();
             drivetrain.pivot(Voltage.voltageToPWM(6.1));
