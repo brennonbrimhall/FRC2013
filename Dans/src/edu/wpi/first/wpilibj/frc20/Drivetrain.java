@@ -83,6 +83,12 @@ public class Drivetrain {
         rightSpeed = speed + turn;
         driveMotors();
     }
+    
+    void pivot(double speed) {
+        leftSpeed = speed;
+        rightSpeed = speed;
+        driveMotors();
+    }
 
     void safeArcadeDrive(double speed, double turn, boolean leftHit, boolean rightHit) {
         leftSpeed = -speed + turn;
