@@ -420,7 +420,7 @@ public class Tray {
             }
             //System.out.println(encoder.getRate());
             //For now, use PWM based on battery voltage.
-            double pwm = -shooterVoltage / DriverStation.getInstance().getBatteryVoltage();
+            double pwm = -Voltage.voltageToPWM(shooterVoltage);
             
             if (pwm > 1.0) {
                 pwm = 1.0;

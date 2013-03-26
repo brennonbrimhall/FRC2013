@@ -244,7 +244,7 @@ public class Robot extends IterativeRobot {
     private void fourDiskAutonomousPeriodic() {
         //System.out.println(drivetrain.getRightDistance());
         //Lower tray
-        if (cycleCounter < 25) {
+        /*if (cycleCounter < 25) {
             //Waiting for tray to lower and turning on collection
             tray.beltOn();
             tray.collectorOn();
@@ -256,11 +256,11 @@ public class Robot extends IterativeRobot {
             drivetrain.gyro.reset();
             drivetrain.resetRightDistance();
         //Turning
-        } else if (cycleCounter < 285) {
+        } else*/ if (cycleCounter < (285)) {
             tray.beltOff();
             tray.collectorOff();
-            drivetrain.pivot(.5);
-        } else if (cycleCounter < 370){
+            drivetrain.pivot(Voltage.voltageToPWM(6.1));
+        } /*else if (cycleCounter < 370){
             //drivetrain.arcadeDrive(0, 0);
             drivetrain.safeArcadeDrive(-.35, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
         } else if (cycleCounter < 400){
@@ -269,7 +269,7 @@ public class Robot extends IterativeRobot {
             tray.shoot();
         } else if (cycleCounter < 700) {
             tray.notShoot();
-        }
+        }*/
         
     }
 
