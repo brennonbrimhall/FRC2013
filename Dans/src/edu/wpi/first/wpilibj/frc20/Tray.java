@@ -18,20 +18,33 @@ public class Tray {
 
     //Constants
     final int kTrayUp = 1;
+<<<<<<< HEAD
     //final int kTrayNeutral = 0;
+=======
+>>>>>>> origin/master
     final int kTrayDown = -1;
     final double kCollectorSpeed = -1.0;
     final double kBeltSpeed = -1.0;
+    final double kBeltShootSpeed = -.5;
     final double kShooterSetSpeed = 1000;
+<<<<<<< HEAD
     public final int kIndexerCyclesAfterTrayMoved = 300;
     public final int kIndexerCyclesBeforeTrayMoved = 100;
     public final int kNumCyclesAfterShooting = 50;
+=======
+    final int kIndexerCyclesAfterTrayMoved = 125;
+    final int kIndexerCyclesBeforeTrayMoved = 100;
+    final int kNumCyclesAfterShooting = 50;
+    
+>>>>>>> origin/master
     //Variables for Tray logic
     boolean isShooting;
     boolean isTrayMoving;
     boolean isLastDiscFired;
     int numCycles;
     int trayDirection;
+    double shooterVoltage = 8.4;
+    
     //Variables to hold private classes
     Flywheel flywheel;
     Belt belt;
@@ -53,8 +66,11 @@ public class Tray {
         latch = new Latch(latchSolenoid);
         indexer = new Indexer(indexerSolenoid);
 
+<<<<<<< HEAD
 
     }
+=======
+>>>>>>> origin/master
 
     void reset() {
         numCycles = 0;
@@ -67,6 +83,32 @@ public class Tray {
         lower();
     }
 
+    void reset() {
+        numCycles = 0;
+        isTrayMoving = false;
+        isShooting = false;
+        flywheel.setOn();
+        latch.lock();
+        belt.setOff();
+        collector.setOn();
+        trayDirection = kTrayUp;
+        indexer.push();
+        lower();
+    }
+    
+    /**
+     * Sets tray up in test mode.  Turns everything off, locks the stopper/latch,
+     * and then raises the tray.
+     */
+    void test() {
+        allOff();
+        latch.lock();
+        raise();
+    }
+    
+    /**
+     * Sets the values of motors and actuators based on global values
+     */
     void update() {
         flywheel.update();
         if (isTrayMoving) {
@@ -84,17 +126,24 @@ public class Tray {
                     isTrayMoving = false;
                 } else if (trayDirection == kTrayDown) {
                     lifter.lower();
+<<<<<<< HEAD
 
                 } /*else if (trayDirection == kTrayNeutral) {
                  lifter.release();
                  }*/
+=======
+                }
+>>>>>>> origin/master
             } else {
                 indexer.pull();
                 isTrayMoving = false;
             }
         }
     }
-
+    
+    /**
+     * Raises the tray.
+     */
     void raise() {
         if (isShooting) {
             return;
@@ -107,6 +156,9 @@ public class Tray {
         }
     }
 
+    /**
+     * Lowers the tray.
+     */
     void lower() {
         if (isShooting) {
             return;
@@ -114,6 +166,7 @@ public class Tray {
         if (trayDirection == kTrayUp) {
             trayDirection = kTrayDown;
             isTrayMoving = true;
+<<<<<<< HEAD
             //lifter.lower();
             numCycles = 0;
         } /*else if (trayDirection == kTrayNeutral) {
@@ -121,6 +174,10 @@ public class Tray {
          isTrayMoving = true;
          lifter.lower();
          }*/
+=======
+            numCycles = 0;
+        }
+>>>>>>> origin/master
     }
     /*
      void release() {
@@ -140,36 +197,70 @@ public class Tray {
      }
      */
 
+    /**
+     * Turns the collector on.
+     */
     void collectorOn() {
         if (!isShooting) {
             collector.setOn();
         }
     }
-
+    
+    /**
+     * Turns the collector off.
+     */
     void collectorOff() {
         if (!isShooting) {
             collector.setOff();
         }
     }
-
+    
+    /**
+     * Turns collector in reverse to backdrive disks in case of jamming.
+     */
     void collectorReverse() {
         if (!isShooting) {
             collector.setReverse();
         }
     }
 
+    /**
+     * Turns belt on.
+     */
     void beltOn() {
         if (!isShooting) {
             belt.setOn();
         }
     }
-
+    
+    /**
+     * Turns belt off.
+     */
     void beltOff() {
         if (!isShooting) {
             belt.setOff();
         }
     }
+    
+    /**
+     * Turns belt in reverse to backdrive disks in case of jamming.
+     */
+    void beltReverse() {
+        if (!isShooting) {
+            belt.setReverse();
+        }
+    }
+    
+    /**
+     * Turns everything on the tray off.
+     */
+    void allOff() {
+        belt.setOff();
+        collector.setOff();
+        flywheel.setOff();
+    }
 
+<<<<<<< HEAD
     void beltReverse() {
         if (!isShooting) {
             belt.setReverse();
@@ -182,10 +273,21 @@ public class Tray {
         flywheel.setOff();
     }
 
+=======
+    /**
+     * Turns the flywheel on.
+     */
+>>>>>>> origin/master
     void shooterOn() {
         flywheel.setOn();
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * Shoots the first three frisbees.
+     */
+>>>>>>> origin/master
     void shoot() {
         if (isTrayMoving) {
             return;
@@ -197,7 +299,7 @@ public class Tray {
             isShooting = true;
         }
         if (flywheel.atSpeed()) {
-            belt.setOn();
+            belt.setShootOn();
             collector.setOn();
         } else {
             belt.setOff();
@@ -205,9 +307,13 @@ public class Tray {
         }
         if (flywheel.discsShot == 3) {
             notShoot();
+            belt.setOn();
         }
     }
 
+    /**
+     * Fires last frisbee with the indexer.
+     */
     void notShoot() {
         if (isTrayMoving) {
             return;
@@ -232,6 +338,9 @@ public class Tray {
         flywheel.resetDiscsShot();
     }
 
+    /**
+     * Callback to clean up after shooting.
+     */
     private void finishShooting() {
         indexer.pull();
         latch.lock();
@@ -281,6 +390,21 @@ public class Tray {
     double flywheelEncoderRate() {
         return flywheel.getEncoderRate();
     }
+<<<<<<< HEAD
+=======
+    
+    double flywheelEncoderDistance() {
+        return flywheel.getEncoderDistance();
+    }
+    
+    void setShooterVoltage(double newVoltage){
+        flywheel.setVoltage(newVoltage);
+    }
+    
+    void setShooterVoltage(){
+        flywheel.setVoltage();
+    }
+>>>>>>> origin/master
 
     //Private class to represent Collector
     private class Collector {
@@ -324,6 +448,10 @@ public class Tray {
         void setOn() {
             beltTalon.set(kBeltSpeed);
         }
+        
+        void setShootOn(){
+            beltTalon.set(kBeltShootSpeed);
+        }
 
         void setOff() {
             beltTalon.set(0);
@@ -359,23 +487,33 @@ public class Tray {
         boolean on = true;
         boolean driverOff = false;
         boolean lowBattery = false;
+<<<<<<< HEAD
         //DigitalInput speedSensor;
         //DigitalInput speedSensor2;
+=======
+>>>>>>> origin/master
 
         Flywheel(Talon flywheelTalon, Encoder encoder) {
             this.flywheelTalon = flywheelTalon;
             this.encoder = encoder;
-            //speedSensor = new DigitalInput(6);
-            //speedSensor2 = new DigitalInput(7);
         }
 
         void update() {
             if (driverOff) {
+<<<<<<< HEAD
                 return;
             }
             System.out.println(encoder.getRate());
             //For now, use PWM based on battery voltage.
             double pwm = -shooterVoltage / DriverStation.getInstance().getBatteryVoltage();
+=======
+                flywheelTalon.set(0);
+                return;
+            }
+            //System.out.println(encoder.getRate());
+            //For now, use PWM based on battery voltage.
+            double pwm = -Voltage.voltageToPWM(shooterVoltage);
+>>>>>>> origin/master
             
             if (pwm > 1.0) {
                 pwm = 1.0;
@@ -417,7 +555,7 @@ public class Tray {
         }
 
         boolean atSpeed() {
-            return true; /*speedSensor.get();*/
+            return true;
             //return encoder.getRate() > shooterSetSpeed;
         }
 
@@ -437,6 +575,13 @@ public class Tray {
             return encoder.getRate();
         }
         
+<<<<<<< HEAD
+=======
+        double getEncoderDistance() {
+            return encoder.getDistance();
+        }
+        
+>>>>>>> origin/master
         void setVoltage() {
             shooterVoltage = 8.4;
         }

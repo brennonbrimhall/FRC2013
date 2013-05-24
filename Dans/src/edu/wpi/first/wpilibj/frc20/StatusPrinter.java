@@ -7,8 +7,14 @@ package edu.wpi.first.wpilibj.frc20;
 import edu.wpi.first.wpilibj.DriverStationLCD;
 
 /**
+<<<<<<< HEAD
  *
  * @author freshplum
+=======
+ * This class periodically prints different values to the Driver Station
+ * User Message box.
+ * @author Brennon Brimhall
+>>>>>>> origin/master
  */
 public class StatusPrinter {
 

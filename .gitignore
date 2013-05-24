@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /2013Beta/build/
 /2013Beta/nbproject/private/
 /2013PrototypingBoard/nbproject/private/
@@ -22,5 +23,26 @@
 >>>>>>> origin/master
 =======
 /Dans/build/
+/OperatorJoystickTest/build/
+>>>>>>> origin/master
+=======
+/2013Beta/build/
+/2013Beta/nbproject/private/
+/2013PrototypingBoard/nbproject/private/
+/PIDBoard/nbproject/private/
+/PIDBoard/build/
+/2013SensorBoard/nbproject/private/
+/2013SensorBoard/build/
+/2013FRC/Robot/build/
+/2013FRC/Robot/nbproject/private
+/2013FRC/Robot/nbproject/project.bak.xml
+*~
+/FlywheelVoltageTest/nbproject/private
+/VoltageBoard/build/
+/ETest/build/
+/testBot/build/
+/2013/Robot/nbproject/*
+/Dans/build/
+Dans/nbproject/project.bak.xml
 /OperatorJoystickTest/build/
 >>>>>>> origin/master

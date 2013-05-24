@@ -7,8 +7,14 @@ package edu.wpi.first.wpilibj.frc20;
 import edu.wpi.first.wpilibj.Joystick;
 
 /**
+<<<<<<< HEAD
  *
  * @author freshplum
+=======
+ * Describes a Logitech Dual Action Controller.  This type of controller is used
+ * for operator control, and it simplifies and abstracts the raw joystick.
+ * @author Brennon Brimhall
+>>>>>>> origin/master
  */
 public class LogitechDualActionController {
     
