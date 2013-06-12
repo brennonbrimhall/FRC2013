@@ -4,9 +4,11 @@
  */
 package edu.wpi.first.wpilibj.frc20;
 
+import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Talon;
 
@@ -21,10 +23,10 @@ public class Tray {
     final int kTrayDown = -1;
     final double kCollectorSpeed = -1.0;
     final double kBeltSpeed = -1.0;
-    final double kBeltShootSpeed = -.5;
-    final double kShooterSetSpeed = 1000;
-    final int kIndexerCyclesAfterTrayMoved = 125;
-    final int kIndexerCyclesBeforeTrayMoved = 100;
+    double beltShootSpeed = -1.0;
+    double shooterSetRate = 12820.5;
+    final int kIndexerCyclesAfterTrayMoved = 110;
+    final int kIndexerCyclesBeforeTrayMoved = 30;
     final int kNumCyclesAfterShooting = 50;
     
     //Variables for Tray logic
@@ -46,7 +48,7 @@ public class Tray {
     //Constructor for entire tray; calls other constructors
     Tray(Talon shooterTalon, Talon beltTalon, Talon collectorTalon,
             DoubleSolenoid traySolenoid, DoubleSolenoid latchSolenoid,
-            DoubleSolenoid indexerSolenoid, Encoder shooterEncoder) {
+            DoubleSolenoid indexerSolenoid, Counter shooterEncoder) {
 
         flywheel = new Flywheel(shooterTalon, shooterEncoder);
         belt = new Belt(beltTalon);
@@ -90,12 +92,13 @@ public class Tray {
         if (isTrayMoving) {
             numCycles += 1;
             if (numCycles < kIndexerCyclesBeforeTrayMoved) {
-                if (trayDirection == kTrayUp) {
+                /*if (trayDirection == kTrayUp) {
                     indexer.push();
                 } else {
                     numCycles = kIndexerCyclesBeforeTrayMoved;
 
-                }
+                }*/
+                indexer.push();
             } else if (numCycles < kIndexerCyclesAfterTrayMoved) {
                 if (trayDirection == kTrayUp) {
                     lifter.raise();
@@ -107,6 +110,11 @@ public class Tray {
                 indexer.pull();
                 isTrayMoving = false;
             }
+        }
+        if(trayDirection == kTrayUp){
+            setShooterSpeedTrayUp();
+        }else{
+            setShooterSpeedTrayDown();
         }
     }
     
@@ -182,6 +190,7 @@ public class Tray {
         if (!isShooting) {
             belt.setOff();
         }
+        //System.out.println("Belt Off");
     }
     
     /**
@@ -238,7 +247,7 @@ public class Tray {
     /**
      * Fires last frisbee with the indexer.
      */
-    void notShoot() {
+    void notShoot(int cyclesToWait) {
         if (isTrayMoving) {
             return;
         }
@@ -256,10 +265,14 @@ public class Tray {
             }
             isLastDiscFired = true;
         }
-        if (numCycles == 50) {
+        if (numCycles == cyclesToWait) {
             finishShooting();
         }
         flywheel.resetDiscsShot();
+    }
+    
+    void notShoot(){
+        notShoot(50);
     }
 
     /**
@@ -319,12 +332,24 @@ public class Tray {
         return flywheel.getEncoderDistance();
     }
     
-    void setShooterVoltage(double newVoltage){
-        flywheel.setVoltage(newVoltage);
+    void setShooterSpeedTrayUp(){
+        flywheel.setTrayUpSpeed();
     }
     
-    void setShooterVoltage(){
-        flywheel.setVoltage();
+    void setShooterRate(double newRate){
+        shooterSetRate = newRate;
+    }
+    
+    void setShooterRate(){
+        shooterSetRate = 0;
+    }
+    
+    void setShooterSpeedTrayDown(){
+        flywheel.setTrayDownSpeed();
+    }
+    
+    double getShooterPWM(){
+        return flywheel.getPWM();
     }
 
     //Private class to represent Collector
@@ -371,7 +396,7 @@ public class Tray {
         }
         
         void setShootOn(){
-            beltTalon.set(kBeltShootSpeed);
+            beltTalon.set(beltShootSpeed);
         }
 
         void setOff() {
@@ -401,24 +426,34 @@ public class Tray {
         final int kFlywheelLowSpeedThreshold = 800;
         final int kFlywheelLowCyclesBeforeShot = 5;
         Talon flywheelTalon;
-        Encoder encoder;
+        Counter encoder;
         int numCyclesBelow;
         int discsShot;
         boolean on = true;
         boolean driverOff = false;
         boolean lowBattery = false;
+        boolean wasWorking = true;
+        boolean isDown = true;
+        final int kNumDataPoints = 10;
+        double[] dataPoints = new double[kNumDataPoints];
+        int dataPointIndex = 0;
 
-        Flywheel(Talon flywheelTalon, Encoder encoder) {
+        Flywheel(Talon flywheelTalon, Counter encoder) {
             this.flywheelTalon = flywheelTalon;
             this.encoder = encoder;
+            for(int i = 0; i < kNumDataPoints; i++){
+                dataPoints[i] = i;
+            }
         }
 
         void update() {
+            encoderWatchdog();
+            
             if (driverOff) {
                 flywheelTalon.set(0);
                 return;
             }
-            //System.out.println(encoder.getRate());
+            System.out.println("E: "+getEncoderRate());
             //For now, use PWM based on battery voltage.
             double pwm = -Voltage.voltageToPWM(shooterVoltage);
             
@@ -432,7 +467,7 @@ public class Tray {
 
 
             //Verifying that we've been below for at least 5 cycles before we say we shot the disc
-            if (/*speedSensor2.get()*/encoder.getRate() < kFlywheelLowSpeedThreshold) {
+            if (/*speedSensor2.get()*/getEncoderRate() < kFlywheelLowSpeedThreshold) {
                 numCyclesBelow++;
             } else {
                 numCyclesBelow = 0;
@@ -442,19 +477,27 @@ public class Tray {
                 discsShot++;
             }
 
-            flywheelTalon.set(pwm);
-
+            //
+            
             //Bang-bang controller to use later.
-            /*
-             if (!on) {
-             flywheelTalon.set(0);
-             return;
-             }
-             if (encoder.getRate() > shooterSetSpeed) {
-             flywheelTalon.set(0);
-             return;
-             }
-             flywheelTalon.set(1);*/
+            if(isEncoderWorking()){
+                beltShootSpeed = -1.0;
+                if (getEncoderRate() > shooterSetRate) {
+                    flywheelTalon.set(0);
+                    return;
+                 }
+                 if(!isDown){
+                     flywheelTalon.set(-.85);
+                 }else{
+                     flywheelTalon.set(-1);
+                 }
+            }else{
+                beltShootSpeed = -.35;
+                flywheelTalon.set(pwm);
+            }
+            
+             
+        
         }
 
         void resetDiscsShot() {
@@ -463,7 +506,7 @@ public class Tray {
 
         boolean atSpeed() {
             return true;
-            //return encoder.getRate() > shooterSetSpeed;
+            //return encoder.getRate() > kShooterSetSpeed;
         }
 
         void setOn() {
@@ -479,19 +522,44 @@ public class Tray {
         }
         
         double getEncoderRate() {
-            return encoder.getRate();
+            return 1/encoder.getPeriod();
         }
         
         double getEncoderDistance() {
-            return encoder.getDistance();
+            return encoder.get();
         }
         
-        void setVoltage() {
+        void setTrayDownSpeed() {
+            isDown = true;
             shooterVoltage = 8.4;
+            shooterSetRate = 12820.5*.95;
+            //shooterSetRate = 9090;
         }
         
-        void setVoltage(double newVoltage) {
-            shooterVoltage = newVoltage;
+        void setTrayUpSpeed() {
+            isDown = false;
+            shooterVoltage = 5.3;
+            shooterSetRate = ((8196.7-1000)*.95)*.945;
+            //shooterSetRate = 5319;
+        }
+        
+        public double getPWM(){
+            return flywheelTalon.get();
+        }
+        
+        boolean isEncoderWorking(){
+            for(int i = 1; i<kNumDataPoints; i++){
+                if(dataPoints[i] != dataPoints[0]){
+                    return true;
+                }
+            }
+            System.out.println("ENCODER NOT WORKING!");
+            return false;
+        }
+        
+        void encoderWatchdog(){
+            dataPoints[dataPointIndex] = getEncoderDistance();
+            dataPointIndex = (dataPointIndex + 1) % kNumDataPoints;
         }
     }
 

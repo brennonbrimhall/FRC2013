@@ -7,6 +7,7 @@
 package edu.wpi.first.wpilibj.frc20;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -45,7 +46,7 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid traySolenoid;
     DoubleSolenoid latchSolenoid;
     DoubleSolenoid indexerSolenoid;
-    Encoder shooterEncoder;
+    Counter shooterEncoder;
     
     //Drivetrain
     Drivetrain drivetrain;
@@ -54,7 +55,8 @@ public class Robot extends IterativeRobot {
     Talon fr;
     Talon br;
     Gyro gyro;
-    Encoder driveEncoder;
+    Encoder leftDriveEncoder;
+    Encoder rightDriveEncoder;
     
     //Lifter
     Lifters lifters;
@@ -65,11 +67,16 @@ public class Robot extends IterativeRobot {
     Relay rightLight;
     
     //Autonomous Mode Constants and Variables
-    final int kNoAuto = 1;
+    final int kTwoDiskNoMoveAuto = 1;
     final int kTwoDiskAuto = 2;
     final int kThreeDiskAuto = 3;
     final int kFourDiskAuto = 4;
+    final int kCornerLeftAuto = 5;
+    final int kCornerRightAuto = 6;
+    final int kMiddleLeftAuto = 7;
+    final int kMiddleRightAuto = 8;
     int autoMode;
+    boolean leftSide;
     
     //Three Disk Auto Constants and Variables
     final int kThreeDiskAutoReverse = 1;
@@ -97,6 +104,9 @@ public class Robot extends IterativeRobot {
         cycleCounter = 0;
         drivetrain.resetGyro();
         drivetrain.resetRightDistance();
+        drivetrain.resetLeftDistance();
+        drivetrain.resetHeading();
+        
     }
 
     public void robotInit() {
@@ -104,7 +114,8 @@ public class Robot extends IterativeRobot {
         operatorStick = new LogitechDualActionController(2);
 
         compressor = new Compressor(1, 1);
-        compressor.start();
+        //compressor.start();
+        compressor.stop();
 
         fl = new Talon(1);
         bl = new Talon(2);
@@ -113,9 +124,10 @@ public class Robot extends IterativeRobot {
 
         gyro = new Gyro(1);
 
-        driveEncoder = new Encoder(6, 7);
+        leftDriveEncoder = new Encoder(6, 7);
+        rightDriveEncoder = new Encoder (4, 5);
 
-        drivetrain = new Drivetrain(fl, bl, fr, br, gyro, driveEncoder);
+        drivetrain = new Drivetrain(fl, bl, fr, br, gyro, leftDriveEncoder, rightDriveEncoder);
 
         shooterTalon = new Talon(5);
         beltTalon = new Talon(6);
@@ -123,11 +135,11 @@ public class Robot extends IterativeRobot {
         traySolenoid = new DoubleSolenoid(1, 2);
         latchSolenoid = new DoubleSolenoid(3, 4);
         indexerSolenoid = new DoubleSolenoid(5, 6);
-        shooterEncoder = new Encoder(4, 5);
+        shooterEncoder = new Counter(13);
         shooterEncoder.start();
 
         tray = new Tray(shooterTalon, beltTalon, collectorTalon, traySolenoid, latchSolenoid, indexerSolenoid, shooterEncoder);
-        statusPrinter = new StatusPrinter(tray);
+        statusPrinter = new StatusPrinter(tray, drivetrain);
 
         cycleCounter = 0;
 
@@ -145,7 +157,8 @@ public class Robot extends IterativeRobot {
     public void autonomousInit() {
         //Lowering tray; setting up for all auto modes
         init();
-
+        drivetrain.heading = 0;
+        drivetrain.arcadeDrive(0, 0);
         //Setting cycle counter; will use in various auto modes
         cycleCounter = 0;
 
@@ -163,6 +176,9 @@ public class Robot extends IterativeRobot {
         //Deciding autonomous function call based on autoMode using a switch or
         //break setup to improve speed.
         switch (autoMode) {
+            case kTwoDiskNoMoveAuto:
+                twoDiskNoMoveAutonomousPeriodic();
+                break;
             case kTwoDiskAuto:
                 twoDiskAutonomousPeriodic();
                 break;
@@ -172,17 +188,34 @@ public class Robot extends IterativeRobot {
             case kFourDiskAuto:
                 fourDiskAutonomousPeriodic();
                 break;
-            case kNoAuto:
+            case kCornerLeftAuto:
+                //leftSide = true;
+                cornerShotLeftAutonomousPeriodic();
+                break;
+            case kCornerRightAuto:
+                //leftSide = false;
+                cornerShotRightAutonomousPeriodic();
+                break;
+            case kMiddleLeftAuto:
+                //middleShotLeftAndTurnAutonomousPeriodic();
+                break;
+            case kMiddleRightAuto:
+                //middleShotRightAndTurnAutonomousPeriodic();
                 break;
         }
+        
+        statusPrinter.printStatuses();
 
-        //Updating tray
+        //Updating tray and drivetrain
         tray.update();
+        drivetrain.updateHeading();
     }
 
     private void decideAutonomous() {
         //Setting two disk auto if DIO 2 is on
-        if (DriverStation.getInstance().getDigitalIn(2)) {
+        if(DriverStation.getInstance().getDigitalIn(1)){
+            autoMode = kTwoDiskNoMoveAuto; 
+        }else if (DriverStation.getInstance().getDigitalIn(2)) {
             autoMode = kTwoDiskAuto;
             //Setting three disk auto if DIO 3 is on
         } else if (DriverStation.getInstance().getDigitalIn(3)) {
@@ -191,8 +224,36 @@ public class Robot extends IterativeRobot {
         } else if (DriverStation.getInstance().getDigitalIn(4)) {
             autoMode = kFourDiskAuto;
             //Defaulting to no autonomous if no DIO is on
+        } else if (DriverStation.getInstance().getDigitalIn(5)) {
+            autoMode = kCornerLeftAuto;
+        } else if (DriverStation.getInstance().getDigitalIn(6)) {
+            autoMode = kCornerRightAuto;
+        } else if (DriverStation.getInstance().getDigitalIn(7)) {
+            autoMode = kMiddleLeftAuto;
+        } else if (DriverStation.getInstance().getDigitalIn(8)) {
+            autoMode = kMiddleRightAuto;
         } else {
-            autoMode = kNoAuto;
+            autoMode = kTwoDiskNoMoveAuto;
+        }
+    }
+    
+    private void twoDiskNoMoveAutonomousPeriodic(){
+        if (cycleCounter < 25) {
+            //Waiting for tray to come down, etc.
+        }else if (cycleCounter < 250) {
+            //Shooting first disk
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.shoot();
+        }else if (cycleCounter < 300) {
+            tray.notShoot();
+        }else if (cycleCounter < 375) {
+            tray.shoot();
+        }else if (cycleCounter < 500) {
+            tray.notShoot();
+        }else if (cycleCounter < 550) {
+            tray.shoot();
+        }else if (cycleCounter < 700) {
+            tray.notShoot();
         }
     }
 
@@ -206,7 +267,7 @@ public class Robot extends IterativeRobot {
             } else {
                 drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             }
-        } else if (cycleCounter < 200) {
+        } else if (cycleCounter < 250) {
             //Shooting first disk
             drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             tray.shoot();
@@ -215,11 +276,10 @@ public class Robot extends IterativeRobot {
             drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
             tray.notShoot();
         }
-        statusPrinter.printStatuses();
     }
 
     private void threeDiskAutonomousPeriodic() {
-        if (threeDiskAutoState == kThreeDiskAutoReverse) {
+        /*if (threeDiskAutoState == kThreeDiskAutoReverse) {
             drivetrain.arcadeDrive(.5, 0);
             if (drivetrain.getRightDistance() >= kThreeDiskAutoReverseDistance) {
                 threeDiskAutoState = kThreeDiskAutoTurn;
@@ -238,59 +298,267 @@ public class Robot extends IterativeRobot {
         } else if (threeDiskAutoState == kThreeDiskAutoWait) {
             drivetrain.arcadeDrive(0, 0);
             tray.notShoot();
+        }*/
+        
+        if(cycleCounter < 25){
+            //Do nothing
+        }else if(cycleCounter < 155){
+            drivetrain.safeArcadeDrive(Voltage.voltageToPWM(4), 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+        }else if(cycleCounter < 300){
+            if(drivetrain.heading < 42){
+                drivetrain.pivot(-.6);
+            }else{
+                drivetrain.pivot(0);
+            }
+        }else if(cycleCounter < 350){
+            //drivetrain.safeArcadeDrive(Voltage.voltageToPWM(2), 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+        }else if(cycleCounter < 550){
+            drivetrain.arcadeDrive(0, 0);
+            tray.shoot();
+        }else if(cycleCounter < 650) {
+            drivetrain.arcadeDrive(0, 0);
+            tray.notShoot();
+        }else{
+            drivetrain.arcadeDrive(0, 0);
         }
     }
 
     private void fourDiskAutonomousPeriodic() {
+        compressor.stop();
         //System.out.println(drivetrain.getRightDistance());
         //Lower tray
+        
         if (cycleCounter < 25) {
             //Waiting for tray to lower and turning on collection
+            drivetrain.arcadeDrive(0, 0);
             tray.beltOn();
             tray.collectorOn();
+            System.out.println(cycleCounter+": Initing");
         //Moving forwards
         } else if (cycleCounter < 30) {
-            drivetrain.arcadeDrive(-.6, 0);
-        } else if (cycleCounter < 220) {
-            drivetrain.arcadeDrive(-.15, 0);
+            drivetrain.arcadeDrive(Voltage.voltageToPWM(11*-.6), 0);
+            
+            System.out.println(cycleCounter+": Moving Forwards");
+        } else if (cycleCounter < 145) {
+            drivetrain.arcadeDrive(Voltage.voltageToPWM(11*-.22), 0);
             drivetrain.gyro.reset();
             drivetrain.resetRightDistance();
+            System.out.println(cycleCounter+": Collecting");
         //Turning
+        }else if (cycleCounter < 210){
+            drivetrain.arcadeDrive(Voltage.voltageToPWM(8*-.22), 0);
+            tray.beltOff();
+            tray.collectorOff();
+            drivetrain.resetHeading();
         } else if (cycleCounter < (285)) {
             tray.beltOff();
             tray.collectorOff();
-            drivetrain.pivot(Voltage.voltageToPWM(6.1));
-        } else if (cycleCounter < 370){
+            if (drivetrain.heading > -115){
+                drivetrain.pivot(Voltage.voltageToPWM(11*.7));
+            }else{
+                drivetrain.pivot(0);
+            }
+        }else if (cycleCounter < 330){
+            drivetrain.arcadeDrive(Voltage.voltageToPWM(11*-.62), 0);
+            tray.beltOff();
+            System.out.println(cycleCounter+": Backing Up");
+        } else if (cycleCounter < 345){
             //drivetrain.arcadeDrive(0, 0);
-            drivetrain.safeArcadeDrive(-.35, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
-        } else if (cycleCounter < 400){
-            drivetrain.safeArcadeDrive(-.2, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
-        } else if (cycleCounter < 600) {
+            //if (lifters.isOnPyramid()){
+                drivetrain.arcadeDrive(Voltage.voltageToPWM(11*-.1),0);
+            //}else{
+                //drivetrain.arcadeDrive(0, 0);
+            //}
+            
+            System.out.println(cycleCounter+": Backing Up");
+        } else if (cycleCounter < 390){
+            drivetrain.safeArcadeDrive(Voltage.voltageToPWM(11*-.2), 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            System.out.println(cycleCounter+": Backing Up");
+        } else if (cycleCounter < 500) {
+            drivetrain.arcadeDrive(0, 0);
             tray.shoot();
-        } else if (cycleCounter < 700) {
-            tray.notShoot();
+            System.out.println(cycleCounter+": Shooting");
+        } else if (cycleCounter < 555){
+                tray.notShoot();
+                System.out.println(cycleCounter+": Not-Shooting");
+        }else if (cycleCounter < 615) {
+            tray.shoot();
+            System.out.println(cycleCounter+": Shooting2");
+        } else {
+            tray.notShoot(20);
+            System.out.println(cycleCounter+": Not-Shooting2");
         }
         
     }
+    
+    void cornerShotLeftAutonomousPeriodic() {
+        if(cycleCounter < 25){
+            //Do nothing
+        }else if(cycleCounter < 235){
+            tray.shoot();
+        }else if(cycleCounter < 300){
+            tray.notShoot();
+        }else if(cycleCounter < 380) {
+            drivetrain.arcadeDrive(-.6, 0);
+        }else if(cycleCounter < 400) {
+            drivetrain.arcadeDrive(-.5, .1);
+            drivetrain.resetHeading();
+            drivetrain.heading = 0;
+        }else if(cycleCounter < 460) {
+            tray.beltOff();
+            tray.collectorOff();
+                if(drivetrain.heading < 40){
+                    drivetrain.pivot(-.5);
+                }else{
+                    drivetrain.pivot(0);
+                }    
+        }else if(cycleCounter < 540) {
+            drivetrain.arcadeDrive(-.2, 0);
+            //System.out.println("Turining Belt Off");
+            tray.beltOff();
+            //System.out.println("Turned Belt off");
+            tray.collectorOff();
+            drivetrain.resetHeading();
+        }else if(cycleCounter < 600) {
+            tray.beltOff();
+            tray.collectorOff();
+                if(drivetrain.heading < 20){
+                    drivetrain.pivot(-.5);
+                }else{
+                    drivetrain.pivot(0);
+                }
 
-    //Shoot 2
-    //Make turn
-    //Backup and collect Disks
-    //90 degree turn
-    //Backup to Pyramid
-    //Fire
+        }else if(cycleCounter >= 600) {
+            drivetrain.arcadeDrive(0,0);
+        }
+    }
+    
+    void cornerShotRightAutonomousPeriodic(){
+        if(cycleCounter < 25){
+            //Do nothing
+        }else if(cycleCounter < 235){
+            tray.shoot();
+        }else if(cycleCounter < 300){
+            tray.notShoot();
+        }else if(cycleCounter < 380) {
+            drivetrain.arcadeDrive(-.5, 0);
+        }else if(cycleCounter < 400) {
+            drivetrain.arcadeDrive(-.5, 0);
+            drivetrain.resetHeading();
+            drivetrain.heading = 0;
+        }else if(cycleCounter < 460) {
+            tray.beltOff();
+            tray.collectorOff();
+            
+                if(drivetrain.heading > -40){
+                    drivetrain.pivot(.5);
+                }else{
+                    drivetrain.pivot(0);
+                }
+            
+        }else if(cycleCounter < 540) {
+            drivetrain.arcadeDrive(-.2, 0);
+            //System.out.println("Turining Belt Off");
+            tray.beltOff();
+            //System.out.println("Turned Belt off");
+            tray.collectorOff();
+            drivetrain.resetHeading();
+        }else if(cycleCounter < 600) {
+            tray.beltOff();
+            tray.collectorOff();
+            
+                if(drivetrain.heading < -20){
+                    drivetrain.pivot(.5);
+                }else{
+                    drivetrain.pivot(0);
+                }
+            
+        }else if(cycleCounter >= 600) {
+            drivetrain.arcadeDrive(0,0);
+        }
+    }
+    
+    void middleShotLeftAndTurnAutonomousPeriodic() {
+        if (cycleCounter < 25) {
+            //Waiting for tray to come down, etc.
+        } else if (cycleCounter < 75) {
+            //Backing up to pyramid
+            if(lifters.isOnPyramid()){
+                //System.out.println("On Pyramid");
+            }else{
+                //System.out.println("Not on Pyramid");
+            }
+            
+            if (!lifters.isOnPyramid()) {
+                //System.out.println("Driving Backwards");
+                drivetrain.safeArcadeDrive(-.15, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            } else {
+                drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            }
+        } else if (cycleCounter < 200) {
+            //Shooting first disk
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.shoot();
+        } else if (cycleCounter < 250) {
+            //Shooting second disk
+            drivetrain.safeArcadeDrive(0, 0, lifters.leftOnPyramid(), lifters.rightOnPyramid());
+            tray.notShoot();
+        } else if (cycleCounter < 320) {
+            drivetrain.arcadeDrive(.4, 0);
+            drivetrain.resetHeading();
+        }else if (cycleCounter < 325) {
+            drivetrain.arcadeDrive(0, 0);
+        } else if (cycleCounter < 395) {
+            if(drivetrain.heading > -90){
+                drivetrain.pivot(.2*(390-cycleCounter));
+            }else{
+                drivetrain.pivot(0);
+            }
+        }else if (cycleCounter < 460) {
+            drivetrain.arcadeDrive(-.6, 0);
+            drivetrain.resetHeading();
+        }else if (cycleCounter < 505) {
+            if(drivetrain.heading < 70){
+                drivetrain.pivot(-.45);
+            }else{
+                drivetrain.pivot(0);
+            }
+        }else if (cycleCounter < 625) {
+            drivetrain.arcadeDrive(-.65, 0);
+            drivetrain.resetHeading();
+            //System.out.println("Moving");
+        }else if (cycleCounter < 705) {
+            if(drivetrain.heading < 50){
+                drivetrain.pivot(-.3);
+            }else{
+                drivetrain.pivot(0);
+            }
+            //System.out.println("Pivoting");
+        } else {
+            drivetrain.arcadeDrive(0, 0);
+            //System.out.println("Stopping");
+        }
+    }
+    
+    void middleShotRightAndTurnAutonomousPeriodic() {
+        
+    }
+
     public void teleopInit() {
         init();
+        compressor.start();
     }
 
     /**
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
+        //System.out.println("E: "+tray.getShooterPWM());
+        //System.out.println("S: "+tray.shooterSetRate);
         // Turn the lights on and off
         lights();
         
-        tray.setShooterVoltage();
+        //tray.setShooterVoltage(DriverStation.getInstance().getAnalogIn(1)*12/5);
         driveOI();
         trayRaiseOI();
         collectorOI();
@@ -302,8 +570,9 @@ public class Robot extends IterativeRobot {
         limitSwitchesOI();
         shootOI();
         
-        //Updating tray
+        //Updating tray and drivetrain
         tray.update();
+        drivetrain.updateHeading();
         
         //Updating statuses
         statusPrinter.printStatuses();
@@ -445,5 +714,10 @@ public class Robot extends IterativeRobot {
         } else {
             rightLight.set(Relay.Value.kOff);
         }
+    }
+    
+    public void disabledPeriodic(){
+        statusPrinter.printStatuses();
+        drivetrain.updateHeading();
     }
 }

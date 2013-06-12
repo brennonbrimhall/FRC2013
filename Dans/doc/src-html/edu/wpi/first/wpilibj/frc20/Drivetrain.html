@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * To change this template, choose Tools | Templates<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * and open the template in the editor.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> */<a name="line.4"></a>
+<span class="sourceLineNo">005</span>package edu.wpi.first.wpilibj.frc20;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import edu.wpi.first.wpilibj.Encoder;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import edu.wpi.first.wpilibj.RobotDrive;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import edu.wpi.first.wpilibj.Talon;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import edu.wpi.first.wpilibj.Gyro;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>/**<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * @author freshplum<a name="line.14"></a>
+<span class="sourceLineNo">015</span> */<a name="line.15"></a>
+<span class="sourceLineNo">016</span>public class Drivetrain {<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>    final double kMaxPyramidSpeed = .1;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>    //Deadband for speed function.  Talons have a 4% deadband threshold built in.<a name="line.19"></a>
+<span class="sourceLineNo">020</span>    final double deadbandThreshold = 0.06; //6%<a name="line.20"></a>
+<span class="sourceLineNo">021</span>    Talon frontLeft;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>    Talon backLeft;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>    Talon frontRight;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>    Talon backRight;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>    Gyro gyro;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>    double leftSpeed;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    double rightSpeed;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    <a name="line.28"></a>
+<span class="sourceLineNo">029</span>    Encoder leftEncoder;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    Encoder rightEncoder;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro) {<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        this.frontLeft = frontLeft;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        this.backLeft = backLeft;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        this.frontRight = frontRight;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        this.backRight = backRight;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        this.gyro = gyro;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>    }<a name="line.38"></a>
+<span class="sourceLineNo">039</span>    <a name="line.39"></a>
+<span class="sourceLineNo">040</span>    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro, Encoder encoder) {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        this.frontLeft = frontLeft;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        this.backLeft = backLeft;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        this.frontRight = frontRight;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        this.backRight = backRight;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        this.gyro = gyro;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        this.rightEncoder = encoder;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        this.rightEncoder.start();<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    }<a name="line.48"></a>
+<span class="sourceLineNo">049</span>    <a name="line.49"></a>
+<span class="sourceLineNo">050</span>    double getRightDistance() {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        return rightEncoder.getDistance();<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    }<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    <a name="line.53"></a>
+<span class="sourceLineNo">054</span>    double getLeftDistance() {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        return leftEncoder.getDistance();<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    <a name="line.57"></a>
+<span class="sourceLineNo">058</span>    void resetRightDistance() {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        rightEncoder.reset();<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    }<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    <a name="line.61"></a>
+<span class="sourceLineNo">062</span>    void resetLeftDistance() {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        leftEncoder.reset();<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    <a name="line.65"></a>
+<span class="sourceLineNo">066</span>    void resetDistance(){<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        rightEncoder.reset();<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        leftEncoder.reset();<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        <a name="line.70"></a>
+<span class="sourceLineNo">071</span>    private void driveMotors() {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        frontLeft.set(leftSpeed);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        backLeft.set(leftSpeed);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        frontRight.set(rightSpeed);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        backRight.set(rightSpeed);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        //System.out.println("Gyro: " + gyro.getAngle());<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    }<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>    void arcadeDrive(double speed, double turn) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        leftSpeed = -speed + turn;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        rightSpeed = speed + turn;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        driveMotors();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    void safeArcadeDrive(double speed, double turn, boolean leftHit, boolean rightHit) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        leftSpeed = -speed + turn;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        rightSpeed = speed + turn;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        if (leftHit &amp;&amp; leftSpeed &gt; kMaxPyramidSpeed) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            leftSpeed = kMaxPyramidSpeed;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        if (rightHit &amp;&amp; rightSpeed &lt; -kMaxPyramidSpeed) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            rightSpeed = -kMaxPyramidSpeed;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        driveMotors();<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    }<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    void safeCheesyDrive(double speed, double cheesyTurn, double hardTurn, boolean leftHit, boolean rightHit) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        double s = speedFunction(speed);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        if (s &gt; 0) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            safeArcadeDrive(speedFunction(speed), speedFunction(speed) * cheesyTurn - hardTurn, leftHit, rightHit);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        } else {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            safeArcadeDrive(speedFunction(speed), -speedFunction(speed) * cheesyTurn - hardTurn, leftHit, rightHit);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    double heaviside(double x) {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        if (x &gt; 0) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            return 1;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        }<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        if (x &lt; 0) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            return -1;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        return 0;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    }<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>    double speedFunction(double x) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        //(x^3+x)/2*sign(x)<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        //To increase curving, up the powers of either of the terms.  Start with<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        //x^3 to x^5, increasing by a power of two each time.  (Going by one isn't<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        //very obvious.  If more curving is needed by x^9, then maybe change x <a name="line.120"></a>
+<span class="sourceLineNo">121</span>        //to x^2 or more.  If you add a third or fourth term, increase the divisor <a name="line.121"></a>
+<span class="sourceLineNo">122</span>        //accordingly.<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        //int sign = 0; //Defaulting to no movement if not within deadband.<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        /*if (x &gt; deadbandThreshold) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>         sign = 1; //You're positive and out of deadband<a name="line.127"></a>
+<span class="sourceLineNo">128</span>         } else if (x &lt; -deadbandThreshold) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         sign = -1; //You;re negative and out of deadband<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         }*/<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        return heaviside(x) * Math.abs(((x * x * x * x * x) + (x)) / 2);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    }<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>    void resetGyro() {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        gyro.reset();<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>}<a name="line.138"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

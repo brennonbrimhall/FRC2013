@@ -14,15 +14,15 @@ import edu.wpi.first.wpilibj.DriverStationLCD;
 public class StatusPrinter {
 
     Tray tray;
+    Drivetrain drivetrain;
 
-    StatusPrinter(Tray t) {
+    StatusPrinter(Tray t, Drivetrain d) {
         tray = t;
+        drivetrain = d;
     }
 
     public void printStatuses() {
-        if (tray.isFlywheelLowBattery()) {
-            DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, "WARNING: Low Battery!");
-        }
+        DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, "Heading: "+drivetrain.heading);
 
         DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Flywheel: " + tray.flywheelEncoderRate());
 
@@ -44,13 +44,15 @@ public class StatusPrinter {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser4, 1, "Collector: Off    ");
         }
         
-        if(tray.isIndexerOut()) {
+        /*if(tray.isIndexerOut()) {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Indexer: OUT");
         }else if(tray.isIndexerIn()) {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Indexer: In ");
         }else{
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Indexer: ?  ");
-        }
+        }*/
+        
+        //DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Right Encoder: "+drivetrain.getRightDistance());
         
         if(tray.isLatchOut()) {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Stopper: OUT");
@@ -60,7 +62,7 @@ public class StatusPrinter {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Stopper:   ?");
         }
 
-
+        //DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Left Encoder: "+drivetrain.getLeftDistance());
         
         DriverStationLCD.getInstance().updateLCD();
     }
