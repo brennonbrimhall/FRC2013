@@ -6,9 +6,10 @@ package edu.wpi.first.wpilibj.frc20;
 
 import com.sun.squawk.util.MathUtils;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Gyro;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Relay.Value;
 
 /**
  *
@@ -17,8 +18,10 @@ import edu.wpi.first.wpilibj.Gyro;
 public class Drivetrain {
     //Maximum PWM for "Safe" drive functions
     final double kMaxPyramidSpeed = .1;
-    final double kWheelDiamaterInInches = 8;
-    final double kRobotWidthInInches = 23.5;
+    
+    //Stuff for heading
+    final double kWheelDiamaterInInches = 6;
+    final double kRobotWidthInInches = 23.25;
     
     //Global variables for speed values
     double leftSpeed;
@@ -39,16 +42,21 @@ public class Drivetrain {
     Gyro gyro;
     Encoder leftEncoder;
     Encoder rightEncoder;
+    
+    //Shifting
+    Shifter shifter;
 
-    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro) {
+    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro, Relay shifterRelay) {
         this.frontLeft = frontLeft;
         this.backLeft = backLeft;
         this.frontRight = frontRight;
         this.backRight = backRight;
         this.gyro = gyro;
+        shifter = new Shifter(shifterRelay);
     }
     
-    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, Gyro gyro, Encoder leftEncoder, Encoder rightEncoder) {
+    Drivetrain(Talon frontLeft, Talon backLeft, Talon frontRight, Talon backRight, 
+               Gyro gyro, Encoder leftEncoder, Encoder rightEncoder, Relay shifterRelay) {
         this.frontLeft = frontLeft;
         this.backLeft = backLeft;
         this.frontRight = frontRight;
@@ -56,11 +64,14 @@ public class Drivetrain {
         this.gyro = gyro;
         this.leftEncoder = leftEncoder;
         this.rightEncoder = rightEncoder;
+        
+        shifter = new Shifter(shifterRelay);
+        
         this.rightEncoder.start();
         this.leftEncoder.start();
         
-        this.rightEncoder.setDistancePerPulse(kWheelDiamaterInInches*Math.PI/360);
-        this.leftEncoder.setDistancePerPulse(kWheelDiamaterInInches*Math.PI/360);
+        this.rightEncoder.setDistancePerPulse(kWheelDiamaterInInches*Math.PI/360*90/43*90/129);
+        this.leftEncoder.setDistancePerPulse(kWheelDiamaterInInches*Math.PI/475*90/56*90/107);
     }
     
     double getRightDistance() {
@@ -129,7 +140,8 @@ public class Drivetrain {
     }
     
     double getHeading(){
-        return heading;
+        return gyro.getAngle();
+        //return heading;
     }
     
     double speedFunction(double x) {
@@ -161,7 +173,7 @@ public class Drivetrain {
         deltaTheta = deltaTheta*180/Math.PI;
         heading += deltaTheta;
         
-        getLowestExpressionForAngle(heading);
+        //getLowestExpressionForAngle(heading);
     }
     
     void getLowestExpressionForAngle(double angleInDegrees){
@@ -180,5 +192,44 @@ public class Drivetrain {
         leftSpeed = speed;
         rightSpeed = speed;
         driveMotors();
-    }   
+    }
+    
+    void highGear(){
+        shifter.highGear();
+    }
+    
+    void lowGear(){
+        shifter.lowGear();
+    }
+    
+    private class Shifter {
+        private Relay relay;
+        private boolean inHighGear;
+        
+        public Shifter(Relay relay){
+            this.relay = relay;
+        }
+        
+        public void highGear(){
+            if(!inHighGear){
+                relay.set(Relay.Value.kForward);
+                inHighGear = true;
+            }
+        }
+        
+        public void lowGear(){
+            if(inHighGear){
+                relay.set(Relay.Value.kReverse);
+                inHighGear = false;
+            }
+        }
+        
+        public void shift(){
+            if(inHighGear){
+                lowGear();
+            }else{
+                highGear();
+            }
+        }
+    }
 }

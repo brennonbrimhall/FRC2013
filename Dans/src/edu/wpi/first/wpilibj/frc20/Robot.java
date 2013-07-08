@@ -11,12 +11,11 @@ import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Talon;
 
 /**
@@ -48,6 +47,12 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid indexerSolenoid;
     Counter shooterEncoder;
     
+    //Blocker
+    Blocker blocker;
+    Talon blockerTalon;
+    DigitalInput blockerUpSwitch;
+    DigitalInput blockerDownSwitch;
+    
     //Drivetrain
     Drivetrain drivetrain;
     Talon fl;
@@ -57,6 +62,7 @@ public class Robot extends IterativeRobot {
     Gyro gyro;
     Encoder leftDriveEncoder;
     Encoder rightDriveEncoder;
+    Relay shifterRelay;
     
     //Lifter
     Lifters lifters;
@@ -65,6 +71,10 @@ public class Robot extends IterativeRobot {
     DigitalInput rightLimit;
     Relay leftLight;
     Relay rightLight;
+    
+    //Flipper
+    Flipper flipper;
+    Relay flipperRelay;
     
     //Autonomous Mode Constants and Variables
     final int kTwoDiskNoMoveAuto = 1;
@@ -126,8 +136,10 @@ public class Robot extends IterativeRobot {
 
         leftDriveEncoder = new Encoder(6, 7);
         rightDriveEncoder = new Encoder (4, 5);
+        
+        shifterRelay = new Relay(8);
 
-        drivetrain = new Drivetrain(fl, bl, fr, br, gyro, leftDriveEncoder, rightDriveEncoder);
+        drivetrain = new Drivetrain(fl, bl, fr, br, gyro, leftDriveEncoder, rightDriveEncoder, shifterRelay);
 
         shooterTalon = new Talon(5);
         beltTalon = new Talon(6);
@@ -137,8 +149,16 @@ public class Robot extends IterativeRobot {
         indexerSolenoid = new DoubleSolenoid(5, 6);
         shooterEncoder = new Counter(13);
         shooterEncoder.start();
+        
+        blockerTalon = new Talon(8);
+        blockerUpSwitch = new DigitalInput(9);
+        blockerDownSwitch = new DigitalInput(8);
 
-        tray = new Tray(shooterTalon, beltTalon, collectorTalon, traySolenoid, latchSolenoid, indexerSolenoid, shooterEncoder);
+        tray = new Tray(shooterTalon, beltTalon, collectorTalon, traySolenoid, 
+            latchSolenoid, indexerSolenoid, shooterEncoder);
+        
+        blocker = new Blocker(tray, blockerTalon, blockerUpSwitch, blockerDownSwitch);
+        
         statusPrinter = new StatusPrinter(tray, drivetrain);
 
         cycleCounter = 0;
@@ -151,7 +171,9 @@ public class Robot extends IterativeRobot {
 
         leftLight = new Relay(2);
         rightLight = new Relay(3);
-
+        
+        flipperRelay = new Relay(7);
+        flipper = new Flipper(flipperRelay);
     }
 
     public void autonomousInit() {
@@ -209,6 +231,7 @@ public class Robot extends IterativeRobot {
         //Updating tray and drivetrain
         tray.update();
         drivetrain.updateHeading();
+        blocker.update(0, false);
     }
 
     private void decideAutonomous() {
@@ -557,18 +580,20 @@ public class Robot extends IterativeRobot {
         //System.out.println("S: "+tray.shooterSetRate);
         // Turn the lights on and off
         lights();
-        
         //tray.setShooterVoltage(DriverStation.getInstance().getAnalogIn(1)*12/5);
         driveOI();
+        shiftingOI();
         trayRaiseOI();
         collectorOI();
         beltOI();
         liftersOI();
+        blockerOI();
         
         allOffOI();
         shooterOnOI();
         limitSwitchesOI();
         shootOI();
+        flipperOI();
         
         //Updating tray and drivetrain
         tray.update();
@@ -621,7 +646,7 @@ public class Robot extends IterativeRobot {
         if (driverStick.getLeftBumper() && (driverStick.getRightBumper() || (lifters.isOnPyramid()))) {
             lifters.lower();
         }
-        if (driverStick.getB()) {
+        if (driverStick.getX()) {
             lifters.raise();
         }
     }
@@ -644,13 +669,23 @@ public class Robot extends IterativeRobot {
     
     private void limitSwitchesOI(){
         //Disabling limit switches
-        if (driverStick.getX()) {
+        if (driverStick.getStart()) {
             lifters.disableSwitch();
         }
         
         //Enabling limit switches 
-        if (driverStick.getY()) {
+        if (driverStick.getBack()) {
             lifters.enableSwitch();
+        }
+    }
+    
+    private void shiftingOI(){
+        if(driverStick.getA() && !driverStick.getB()){
+            drivetrain.highGear();
+        }else if(driverStick.getB() && !driverStick.getA()){
+            drivetrain.lowGear();
+        }else if (driverStick.getA() && driverStick.getB()){
+            drivetrain.lowGear();
         }
     }
     
@@ -666,6 +701,23 @@ public class Robot extends IterativeRobot {
         if (operatorStick.getButton(10)) {
             tray.shooterOn();
         }
+    }
+    
+    private void blockerOI(){
+        blocker.update(-operatorStick.getRightY(), operatorStick.getRightPressed());
+        /*if(operatorStick.getLeftPressed()){
+            blocker.override();
+        }
+        
+        if(operatorStick.getRightPressed()){
+            blocker.notOverride();
+        }
+        
+        if (operatorStick.getRightY() < -.8){
+            blocker.raise();
+        }else if (operatorStick.getRightY() > .8){
+            blocker.lower();
+        }*/
     }
 
     /**
@@ -696,6 +748,9 @@ public class Robot extends IterativeRobot {
         liftersOI();
         allOffOI();
         
+        shiftingOI();
+        blockerOI();
+        
         //Printing statuses
         statusPrinter.printStatuses();
         
@@ -713,6 +768,14 @@ public class Robot extends IterativeRobot {
             rightLight.set(Relay.Value.kForward);
         } else {
             rightLight.set(Relay.Value.kOff);
+        }
+    }
+    
+    private void flipperOI() {
+        if(operatorStick.getLeftY() > -.5){
+            flipper.extend();
+        }else{
+            flipper.retract();
         }
     }
     

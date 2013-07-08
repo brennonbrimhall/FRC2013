@@ -22,7 +22,7 @@ public class StatusPrinter {
     }
 
     public void printStatuses() {
-        DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, "Heading: "+drivetrain.heading);
+        DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser1, 1, "Heading: "+drivetrain.getHeading());
 
         DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser2, 1, "Flywheel: " + tray.flywheelEncoderRate());
 
@@ -44,9 +44,10 @@ public class StatusPrinter {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser4, 1, "Collector: Off    ");
         }
         
-        /*if(tray.isIndexerOut()) {
-            DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Indexer: OUT");
-        }else if(tray.isIndexerIn()) {
+        //if(tray.isIndexerOut()) {
+            DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Left:" + drivetrain.getLeftDistance());
+        
+        /* }else if(tray.isIndexerIn()) {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Indexer: In ");
         }else{
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Indexer: ?  ");
@@ -54,13 +55,13 @@ public class StatusPrinter {
         
         //DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser5, 1, "Right Encoder: "+drivetrain.getRightDistance());
         
-        if(tray.isLatchOut()) {
-            DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Stopper: OUT");
-        }else if(tray.isLatchIn()) {
+        //if(tray.isLatchOut()) {
+            DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Right: "+drivetrain.getRightDistance());
+        /*}else if(tray.isLatchIn()) {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Stopper: In ");
         }else {
             DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Stopper:   ?");
-        }
+        }*/
 
         //DriverStationLCD.getInstance().println(DriverStationLCD.Line.kUser6, 1, "Left Encoder: "+drivetrain.getLeftDistance());
         

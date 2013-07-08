@@ -54,5 +54,13 @@ public class LogitechDualActionController {
     double getRightY() {
         return stick.getRawAxis(4);
     }
+    
+    boolean getLeftPressed() {
+        return stick.getRawButton(11);
+    }
+    
+    boolean getRightPressed() {
+        return stick.getRawButton(12);
+    }
 }
 
