@@ -21,7 +21,7 @@ public class Tray {
     final int kTrayDown = -1;
     final double kCollectorSpeed = -1.0;
     final double kBeltSpeed = -1.0;
-    double beltShootSpeed = -.7;
+    double beltShootSpeed = -.7;//Was -.7
     double shooterSetRate = 12820.5;
     final int kIndexerCyclesAfterTrayMoved = 110;
     final int kIndexerCyclesBeforeTrayMoved = 30;
@@ -499,7 +499,6 @@ public class Tray {
 
             //Bang-bang controller to use later.
             if (isEncoderWorking()) {
-                beltShootSpeed = -0.65;
                 if (getEncoderRate() > shooterSetRate) {
                     flywheelTalon.set(0);
                     return;
@@ -510,7 +509,7 @@ public class Tray {
                     flywheelTalon.set(-1);
                 }
             } else {
-                beltShootSpeed = -.35;
+                beltShootSpeed = -.65;
                 flywheelTalon.set(pwm);
             }
 

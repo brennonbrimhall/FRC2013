@@ -26,6 +26,7 @@ public class Blocker {
     //Members
     private Talon blocker;
     private Tray tray;
+    private boolean override;
 
     public Blocker(Tray tray, Talon blocker, DigitalInput upperLimitSwitch, DigitalInput lowerLimitSwitch) {
         this.blocker = blocker;
@@ -33,10 +34,11 @@ public class Blocker {
         //this.upperLimitSwitch = upperLimitSwitch;
         //this.lowerLimitSwitch = lowerLimitSwitch;
     }
-
+    
     public void update(double speed, boolean override) {
+        this.override = override;
         if(override){
-            blocker.set(speed);
+            blocker.set(speed*.7);
         }else {
             blocker.set(0);
         }
